@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { Check, ClipboardList, Settings, Rocket, MessageCircle, ArrowLeft, Lock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Check, ClipboardList, Settings, Rocket, Lock } from 'lucide-react';
 import { celebrateSuccess } from '@/utils/confetti';
 
 export function SuccessStep() {
@@ -111,57 +110,6 @@ export function SuccessStep() {
           ))}
         </div>
 
-        {/* Buttons */}
-        <div className="space-y-3 pt-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 3 }}
-          >
-            <a
-              href="https://wa.me/5562996320162"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button
-                size="lg"
-                className="w-full bg-cc-green text-cc-black font-semibold text-lg py-6 
-                           hover:scale-105 hover:shadow-lg hover:shadow-cc-green/30 
-                           transition-all duration-200 glow-green"
-              >
-                <motion.span
-                  animate={{ scale: [1, 1.02, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="flex items-center gap-2"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  💬 Falar com Suporte no WhatsApp
-                </motion.span>
-              </Button>
-            </a>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 3.2 }}
-          >
-            <a
-              href="https://companychat.com.br"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full border-cc-green text-cc-green hover:bg-cc-green/10 py-6"
-              >
-                <ArrowLeft className="w-5 h-5 mr-2" />
-                ← Voltar ao Site
-              </Button>
-            </a>
-          </motion.div>
-        </div>
 
         {/* Footer */}
         <motion.p
