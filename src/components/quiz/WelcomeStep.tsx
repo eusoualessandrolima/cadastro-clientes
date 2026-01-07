@@ -80,7 +80,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
             className="text-lg text-cc-gray-text mb-4"
           >
             Você está a poucos passos de revolucionar seu atendimento com{' '}
-            <span className="text-cc-green font-semibold">Inteligência Artificial</span>.
+            <span className="text-cc-dark font-semibold">Inteligência Artificial</span>.
           </motion.p>
 
           {/* Description */}
