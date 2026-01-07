@@ -77,10 +77,9 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5 }}
-            className="text-lg text-cc-gray-text mb-4"
+            className="text-lg text-cc-dark mb-4"
           >
-            Você está a poucos passos de revolucionar seu atendimento com{' '}
-            <span className="text-cc-dark font-semibold">Inteligência Artificial</span>.
+            Você está a poucos passos de revolucionar seu atendimento com Inteligência Artificial.
           </motion.p>
 
           {/* Description */}
