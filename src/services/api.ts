@@ -42,7 +42,7 @@ export interface OnboardingData {
   };
 }
 
-const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL || '';
+const WEBHOOK_URL = 'https://webhook.companychatautomacoeseia.com/webhook/formcliente';
 
 export async function sendOnboardingData(data: OnboardingData): Promise<{ success: boolean }> {
   console.log('📤 Preparing to send onboarding data...');
