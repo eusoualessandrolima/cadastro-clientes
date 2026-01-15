@@ -32,7 +32,6 @@ export type Database = {
           modelo_contratacao: string | null
           nome_empresa: string
           nome_responsavel: string
-          observacoes_valor: string | null
           origem: string | null
           perguntas_comuns: string | null
           segmento_produto_servico: string | null
@@ -43,7 +42,9 @@ export type Database = {
           telefone_contato: string | null
           tom_comunicacao: string | null
           topicos_nao_abordar: string | null
-          valor_acordado: number | null
+          valor_mensalidade: number | null
+          valor_setup: number | null
+          valor_unico: number | null
           webhook_data: string | null
           webhook_enviado: boolean | null
         }
@@ -64,7 +65,6 @@ export type Database = {
           modelo_contratacao?: string | null
           nome_empresa: string
           nome_responsavel: string
-          observacoes_valor?: string | null
           origem?: string | null
           perguntas_comuns?: string | null
           segmento_produto_servico?: string | null
@@ -75,7 +75,9 @@ export type Database = {
           telefone_contato?: string | null
           tom_comunicacao?: string | null
           topicos_nao_abordar?: string | null
-          valor_acordado?: number | null
+          valor_mensalidade?: number | null
+          valor_setup?: number | null
+          valor_unico?: number | null
           webhook_data?: string | null
           webhook_enviado?: boolean | null
         }
@@ -96,7 +98,6 @@ export type Database = {
           modelo_contratacao?: string | null
           nome_empresa?: string
           nome_responsavel?: string
-          observacoes_valor?: string | null
           origem?: string | null
           perguntas_comuns?: string | null
           segmento_produto_servico?: string | null
@@ -107,7 +108,9 @@ export type Database = {
           telefone_contato?: string | null
           tom_comunicacao?: string | null
           topicos_nao_abordar?: string | null
-          valor_acordado?: number | null
+          valor_mensalidade?: number | null
+          valor_setup?: number | null
+          valor_unico?: number | null
           webhook_data?: string | null
           webhook_enviado?: boolean | null
         }

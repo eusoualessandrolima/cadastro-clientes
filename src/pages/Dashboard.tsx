@@ -65,8 +65,9 @@ interface Cadastro {
   segmento_produto_servico: string | null;
   servicos_contratados: string[] | null;
   modelo_contratacao: string | null;
-  valor_acordado: number | null;
-  observacoes_valor?: string | null;
+  valor_setup: number | null;
+  valor_mensalidade: number | null;
+  valor_unico: number | null;
   status: string;
   webhook_enviado: boolean;
   cpf_cnpj?: string | null;
@@ -89,8 +90,9 @@ interface EditFormData {
   segmento_produto_servico: string;
   email_principal: string;
   fone_whatsapp: string;
-  valor_acordado: string;
-  observacoes_valor: string;
+  valor_setup: string;
+  valor_mensalidade: string;
+  valor_unico: string;
   modelo_contratacao: string;
   status: string;
   cpf_cnpj: string;
@@ -139,8 +141,9 @@ export default function Dashboard() {
     segmento_produto_servico: '',
     email_principal: '',
     fone_whatsapp: '',
-    valor_acordado: '',
-    observacoes_valor: '',
+    valor_setup: '',
+    valor_mensalidade: '',
+    valor_unico: '',
     modelo_contratacao: '',
     status: 'novo',
     cpf_cnpj: '',
@@ -201,7 +204,7 @@ export default function Dashboard() {
       if (error) throw error;
 
       console.log('=== DADOS CARREGADOS ===', data);
-      const cadastrosData = (data || []) as Cadastro[];
+      const cadastrosData = (data || []) as unknown as Cadastro[];
       setCadastros(cadastrosData);
       calculateStats(cadastrosData);
     } catch (error: any) {
@@ -269,8 +272,9 @@ export default function Dashboard() {
       segmento_produto_servico: cadastro.segmento_produto_servico || '',
       email_principal: cadastro.email_principal || '',
       fone_whatsapp: cadastro.fone_whatsapp || '',
-      valor_acordado: cadastro.valor_acordado?.toString() || '',
-      observacoes_valor: cadastro.observacoes_valor || '',
+      valor_setup: cadastro.valor_setup?.toString() || '',
+      valor_mensalidade: cadastro.valor_mensalidade?.toString() || '',
+      valor_unico: cadastro.valor_unico?.toString() || '',
       modelo_contratacao: cadastro.modelo_contratacao || 'monthly',
       status: cadastro.status || 'novo',
       cpf_cnpj: cadastro.cpf_cnpj || '',
@@ -292,8 +296,9 @@ export default function Dashboard() {
         segmento_produto_servico: editFormData.segmento_produto_servico || null,
         email_principal: editFormData.email_principal,
         fone_whatsapp: editFormData.fone_whatsapp,
-        valor_acordado: editFormData.valor_acordado ? parseFloat(editFormData.valor_acordado) : null,
-        observacoes_valor: editFormData.observacoes_valor || null,
+        valor_setup: editFormData.modelo_contratacao === 'monthly' && editFormData.valor_setup ? parseFloat(editFormData.valor_setup) : null,
+        valor_mensalidade: editFormData.modelo_contratacao === 'monthly' && editFormData.valor_mensalidade ? parseFloat(editFormData.valor_mensalidade) : null,
+        valor_unico: editFormData.modelo_contratacao === 'single' && editFormData.valor_unico ? parseFloat(editFormData.valor_unico) : null,
         modelo_contratacao: editFormData.modelo_contratacao || null,
         status: editFormData.status,
         cpf_cnpj: editFormData.cpf_cnpj || null,
@@ -592,12 +597,23 @@ export default function Dashboard() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <p className="text-[#00FF94] font-semibold">
-                        {cadastro.valor_acordado 
-                          ? `R$ ${Number(cadastro.valor_acordado).toLocaleString('pt-BR')}`
-                          : '-'
-                        }
-                      </p>
+                      {cadastro.modelo_contratacao === 'monthly' ? (
+                        <div>
+                          <p className="text-orange-400 font-semibold text-sm">
+                            Setup: R$ {Number(cadastro.valor_setup || 0).toLocaleString('pt-BR')}
+                          </p>
+                          <p className="text-[#00FF94] font-semibold">
+                            R$ {Number(cadastro.valor_mensalidade || 0).toLocaleString('pt-BR')}/mês
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-[#00FF94] font-semibold">
+                          {cadastro.valor_unico 
+                            ? `R$ ${Number(cadastro.valor_unico).toLocaleString('pt-BR')}`
+                            : '-'
+                          }
+                        </p>
+                      )}
                       <p className="text-xs text-gray-500">
                         {cadastro.modelo_contratacao === 'monthly' ? 'Mensal' : cadastro.modelo_contratacao === 'unique' ? 'Único' : cadastro.modelo_contratacao === 'single' ? 'Único' : '-'}
                       </p>
@@ -679,27 +695,37 @@ export default function Dashboard() {
                 <InfoItem label="WhatsApp" value={selectedCadastro.fone_whatsapp} />
                 <InfoItem label="Segmento" value={selectedCadastro.segmento_produto_servico || '-'} />
                 <InfoItem 
-                  label="Valor Acordado" 
-                  value={selectedCadastro.valor_acordado 
-                    ? `R$ ${Number(selectedCadastro.valor_acordado).toLocaleString('pt-BR')}`
-                    : '-'
-                  } 
-                />
-                <InfoItem 
                   label="Modelo" 
                   value={selectedCadastro.modelo_contratacao === 'monthly' ? 'Mensal' : selectedCadastro.modelo_contratacao === 'single' ? 'Único' : selectedCadastro.modelo_contratacao || '-'} 
                 />
               </div>
 
-              {/* Observações sobre o Valor */}
-              {selectedCadastro.observacoes_valor && (
-                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <p className="text-xs text-blue-400 mb-2 font-semibold">
-                    📝 Observações sobre o Valor:
+              {/* Financial Information */}
+              {selectedCadastro.modelo_contratacao === 'monthly' ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-400 font-semibold">💰 Valores:</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                      <p className="text-xs text-orange-400 mb-1">Setup Inicial</p>
+                      <p className="text-xl font-bold text-white">
+                        R$ {Number(selectedCadastro.valor_setup || 0).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                    <div className="p-4 bg-[#00FF94]/10 border border-[#00FF94]/20 rounded-lg">
+                      <p className="text-xs text-[#00FF94] mb-1">Mensalidade</p>
+                      <p className="text-xl font-bold text-[#00FF94]">
+                        R$ {Number(selectedCadastro.valor_mensalidade || 0).toLocaleString('pt-BR')}/mês
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-[#00FF94]/10 border border-[#00FF94]/20 rounded-lg">
+                  <p className="text-xs text-[#00FF94] mb-1">Valor do Projeto</p>
+                  <p className="text-2xl font-bold text-[#00FF94]">
+                    R$ {Number(selectedCadastro.valor_unico || 0).toLocaleString('pt-BR')}
                   </p>
-                  <p className="text-sm text-gray-300 italic">
-                    "{selectedCadastro.observacoes_valor}"
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Pagamento único</p>
                 </div>
               )}
               
@@ -853,53 +879,66 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Grid 2 colunas - Valor e Modelo */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Valor */}
+            {/* Modelo de Contratação */}
+            <div>
+              <label className="text-sm text-gray-400 block mb-2">
+                Modelo de Contratação
+              </label>
+              <select
+                value={editFormData.modelo_contratacao}
+                onChange={(e) => setEditFormData({...editFormData, modelo_contratacao: e.target.value})}
+                className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+              >
+                <option value="monthly">Mensal</option>
+                <option value="single">Único</option>
+              </select>
+            </div>
+
+            {/* Dynamic Value Fields based on Contract Model */}
+            {editFormData.modelo_contratacao === 'monthly' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-gray-400 block mb-2">
+                    Setup Inicial (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editFormData.valor_setup}
+                    onChange={(e) => setEditFormData({...editFormData, valor_setup: e.target.value})}
+                    className="w-full px-4 py-3 bg-black border border-orange-500/20 rounded-lg text-white focus:border-orange-500/50 focus:outline-none transition-colors"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 block mb-2">
+                    Mensalidade (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editFormData.valor_mensalidade}
+                    onChange={(e) => setEditFormData({...editFormData, valor_mensalidade: e.target.value})}
+                    className="w-full px-4 py-3 bg-black border border-[#00FF94]/20 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+            ) : (
               <div>
                 <label className="text-sm text-gray-400 block mb-2">
-                  Valor Acordado
+                  Valor do Projeto (R$)
                 </label>
                 <input
                   type="number"
                   step="0.01"
-                  value={editFormData.valor_acordado}
-                  onChange={(e) => setEditFormData({...editFormData, valor_acordado: e.target.value})}
-                  className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                  value={editFormData.valor_unico}
+                  onChange={(e) => setEditFormData({...editFormData, valor_unico: e.target.value})}
+                  className="w-full px-4 py-3 bg-black border border-[#00FF94]/20 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                   placeholder="0.00"
                 />
               </div>
-
-              {/* Modelo */}
-              <div>
-                <label className="text-sm text-gray-400 block mb-2">
-                  Modelo de Contratação
-                </label>
-                <select
-                  value={editFormData.modelo_contratacao}
-                  onChange={(e) => setEditFormData({...editFormData, modelo_contratacao: e.target.value})}
-                  className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
-                >
-                  <option value="monthly">Mensal</option>
-                  <option value="single">Único</option>
-                  <option value="unique">Único</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Observações sobre o Valor */}
-            <div>
-              <label className="text-sm text-gray-400 block mb-2">
-                Observações sobre o Valor
-              </label>
-              <textarea
-                value={editFormData.observacoes_valor}
-                onChange={(e) => setEditFormData({...editFormData, observacoes_valor: e.target.value})}
-                placeholder="Descontos, condições especiais, parcelamento, etc."
-                rows={3}
-                className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors resize-none"
-              />
-            </div>
+            )}
 
             {/* Status */}
             <div>
