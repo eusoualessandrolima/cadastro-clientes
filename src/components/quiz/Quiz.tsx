@@ -5,6 +5,7 @@ import { CompanyStep } from './CompanyStep';
 import { PersonalizationStep } from './PersonalizationStep';
 import { DigitalStep } from './DigitalStep';
 import { MaterialsStep } from './MaterialsStep';
+import { ReviewStep } from './ReviewStep';
 import { SuccessStep } from './SuccessStep';
 import { FormData, initialFormData, QuizStep } from '@/types/quiz';
 import { finalizarCadastro } from '@/services/cadastroService';
@@ -51,6 +52,19 @@ export function Quiz() {
     setFormData(prev => ({ ...prev, ...data }));
   }, []);
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goToStep = (newStep: QuizStep) => {
+    setStep(newStep);
+    scrollToTop();
+  };
+
+  const handleEditStep = (targetStep: 'company' | 'personalization' | 'digital' | 'materials') => {
+    goToStep(targetStep);
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
@@ -80,11 +94,49 @@ export function Quiz() {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
       >
-        {step === 'welcome' && <WelcomeStep onNext={() => setStep('company')} />}
-        {step === 'company' && <CompanyStep formData={formData} updateFormData={updateFormData} onNext={() => setStep('personalization')} />}
-        {step === 'personalization' && <PersonalizationStep formData={formData} updateFormData={updateFormData} onNext={() => setStep('digital')} />}
-        {step === 'digital' && <DigitalStep formData={formData} updateFormData={updateFormData} onNext={() => setStep('materials')} />}
-        {step === 'materials' && <MaterialsStep formData={formData} updateFormData={updateFormData} onSubmit={handleSubmit} isSubmitting={isSubmitting} />}
+        {step === 'welcome' && (
+          <WelcomeStep onNext={() => goToStep('company')} />
+        )}
+        {step === 'company' && (
+          <CompanyStep 
+            formData={formData} 
+            updateFormData={updateFormData} 
+            onNext={() => goToStep('personalization')} 
+          />
+        )}
+        {step === 'personalization' && (
+          <PersonalizationStep 
+            formData={formData} 
+            updateFormData={updateFormData} 
+            onNext={() => goToStep('digital')} 
+            onBack={() => goToStep('company')}
+          />
+        )}
+        {step === 'digital' && (
+          <DigitalStep 
+            formData={formData} 
+            updateFormData={updateFormData} 
+            onNext={() => goToStep('materials')} 
+            onBack={() => goToStep('personalization')}
+          />
+        )}
+        {step === 'materials' && (
+          <MaterialsStep 
+            formData={formData} 
+            updateFormData={updateFormData} 
+            onNext={() => goToStep('review')} 
+            onBack={() => goToStep('digital')}
+          />
+        )}
+        {step === 'review' && (
+          <ReviewStep 
+            formData={formData} 
+            onBack={() => goToStep('materials')} 
+            onEditStep={handleEditStep}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+          />
+        )}
         {step === 'success' && <SuccessStep />}
       </motion.div>
     </AnimatePresence>

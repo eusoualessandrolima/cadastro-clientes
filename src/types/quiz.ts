@@ -70,14 +70,27 @@ export type QuizStep =
   | 'personalization'
   | 'digital'
   | 'materials'
+  | 'review'
   | 'success';
 
 export const STEP_PROGRESS: Record<QuizStep, number> = {
   loading: 0,
   welcome: 0,
-  company: 33,
-  personalization: 66,
-  digital: 100,
-  materials: 100,
+  company: 25,
+  personalization: 50,
+  digital: 75,
+  materials: 90,
+  review: 100,
   success: 100,
+};
+
+export const STEP_LABELS: Record<QuizStep, string> = {
+  loading: '',
+  welcome: '',
+  company: 'Bloco 1 de 4 - Informações da Empresa e Acordo Comercial',
+  personalization: 'Bloco 2 de 4 - Personalização da IA',
+  digital: 'Bloco 3 de 4 - Presença Digital',
+  materials: 'Bloco 4 de 4 - Materiais e Informações',
+  review: 'Revisão Final',
+  success: '',
 };
