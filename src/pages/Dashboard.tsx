@@ -13,7 +13,11 @@ import {
   Search,
   Filter,
   X,
-  CheckCircle
+  CheckCircle,
+  Building2,
+  Phone,
+  Mail,
+  Plus
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useRequireAuth, useAuth } from '@/hooks/useAuth';
@@ -305,13 +309,13 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-400" />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[160px] bg-black/50 border-white/10 text-white">
+                <SelectTrigger className="w-[160px] bg-[#1a1a1a] border-white/10 text-white">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-white/10">
-                  <SelectItem value="all" className="text-white hover:bg-white/10">Todos os status</SelectItem>
+                <SelectContent className="bg-[#1a1a1a] border-white/10 z-50">
+                  <SelectItem value="all" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Todos os status</SelectItem>
                   {Object.entries(statusLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key} className="text-white hover:bg-white/10">
+                    <SelectItem key={key} value={key} className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">
                       {label}
                     </SelectItem>
                   ))}
@@ -321,13 +325,13 @@ export default function Dashboard() {
 
             {/* Filtro de Webhook */}
             <Select value={webhookFilter} onValueChange={setWebhookFilter}>
-              <SelectTrigger className="w-[160px] bg-black/50 border-white/10 text-white">
+              <SelectTrigger className="w-[160px] bg-[#1a1a1a] border-white/10 text-white">
                 <SelectValue placeholder="Webhook" />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-white/10">
-                <SelectItem value="all" className="text-white hover:bg-white/10">Todos</SelectItem>
-                <SelectItem value="sent" className="text-white hover:bg-white/10">Enviados</SelectItem>
-                <SelectItem value="pending" className="text-white hover:bg-white/10">Pendentes</SelectItem>
+              <SelectContent className="bg-[#1a1a1a] border-white/10 z-50">
+                <SelectItem value="all" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Todos</SelectItem>
+                <SelectItem value="sent" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Enviados</SelectItem>
+                <SelectItem value="pending" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Pendentes</SelectItem>
               </SelectContent>
             </Select>
 
@@ -354,42 +358,93 @@ export default function Dashboard() {
 
         {/* Lista de Cadastros */}
         <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-white/10 hover:bg-white/5">
-                <TableHead className="text-gray-400">Empresa</TableHead>
-                <TableHead className="text-gray-400">Responsável</TableHead>
-                <TableHead className="text-gray-400">Contato</TableHead>
-                <TableHead className="text-gray-400">Valor</TableHead>
-                <TableHead className="text-gray-400">Status</TableHead>
-                <TableHead className="text-gray-400">Webhook</TableHead>
-                <TableHead className="text-gray-400 text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredCadastros.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-gray-500 py-12">
-                    {hasActiveFilters 
-                      ? 'Nenhum cadastro encontrado com os filtros aplicados'
-                      : 'Nenhum cadastro encontrado'
-                    }
-                  </TableCell>
+          {filteredCadastros.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 mb-6">
+                <Users className="w-10 h-10 text-gray-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-400 mb-2">
+                {hasActiveFilters 
+                  ? 'Nenhum cadastro encontrado com os filtros aplicados'
+                  : 'Nenhum cadastro encontrado'
+                }
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {hasActiveFilters 
+                  ? 'Tente ajustar os filtros de busca'
+                  : 'Os cadastros aparecerão aqui quando forem preenchidos'
+                }
+              </p>
+              {!hasActiveFilters && (
+                <button
+                  onClick={() => window.open('/', '_blank')}
+                  className="px-6 py-3 bg-[#00FF94] hover:bg-[#00FF94]/90 text-black font-semibold rounded-lg transition-all inline-flex items-center gap-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  Abrir Formulário de Cadastro
+                </button>
+              )}
+              {hasActiveFilters && (
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="border-white/10 text-white hover:bg-white/5"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Limpar Filtros
+                </Button>
+              )}
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="border-white/10 hover:bg-white/5">
+                  <TableHead className="text-gray-400">Empresa</TableHead>
+                  <TableHead className="text-gray-400">Responsável</TableHead>
+                  <TableHead className="text-gray-400">Contato</TableHead>
+                  <TableHead className="text-gray-400">Valor</TableHead>
+                  <TableHead className="text-gray-400">Status</TableHead>
+                  <TableHead className="text-gray-400">Webhook</TableHead>
+                  <TableHead className="text-gray-400 text-right">Ações</TableHead>
                 </TableRow>
-              ) : (
-                filteredCadastros.map((cadastro) => (
-                  <TableRow key={cadastro.id} className="border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium">{cadastro.nome_empresa}</TableCell>
-                    <TableCell className="text-gray-400">{cadastro.nome_responsavel}</TableCell>
-                    <TableCell className="text-gray-400">
-                      <div className="text-sm">{cadastro.email_principal}</div>
-                      <div className="text-xs text-gray-500">{cadastro.fone_whatsapp}</div>
+              </TableHeader>
+              <TableBody>
+                {filteredCadastros.map((cadastro) => (
+                  <TableRow key={cadastro.id} className="border-white/10 hover:bg-white/5 transition-colors">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-[#00FF94]/10 flex items-center justify-center flex-shrink-0">
+                          <Building2 className="w-5 h-5 text-[#00FF94]" />
+                        </div>
+                        <div>
+                          <p className="text-white font-medium">{cadastro.nome_empresa}</p>
+                          <p className="text-xs text-gray-500">{cadastro.segmento_produto_servico || '-'}</p>
+                        </div>
+                      </div>
                     </TableCell>
-                    <TableCell className="text-[#00FF94]">
-                      {cadastro.valor_acordado 
-                        ? `R$ ${Number(cadastro.valor_acordado).toLocaleString('pt-BR')}`
-                        : '-'
-                      }
+                    <TableCell className="text-gray-300">{cadastro.nome_responsavel}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-400 flex items-center gap-2">
+                          <Phone className="w-3 h-3" />
+                          {cadastro.fone_whatsapp}
+                        </p>
+                        <p className="text-sm text-gray-400 flex items-center gap-2">
+                          <Mail className="w-3 h-3" />
+                          {cadastro.email_principal}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-[#00FF94] font-semibold">
+                        {cadastro.valor_acordado 
+                          ? `R$ ${Number(cadastro.valor_acordado).toLocaleString('pt-BR')}`
+                          : '-'
+                        }
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {cadastro.modelo_contratacao === 'monthly' ? 'Mensal' : cadastro.modelo_contratacao === 'unique' ? 'Único' : '-'}
+                      </p>
                     </TableCell>
                     <TableCell>
                       <Badge 
@@ -401,9 +456,15 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell>
                       {cadastro.webhook_enviado ? (
-                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        <span className="inline-flex items-center gap-1.5 text-xs text-green-400">
+                          <CheckCircle className="w-4 h-4" />
+                          Enviado
+                        </span>
                       ) : (
-                        <AlertCircle className="w-5 h-5 text-yellow-400" />
+                        <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                          <Clock className="w-4 h-4" />
+                          Pendente
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -412,7 +473,7 @@ export default function Dashboard() {
                           size="sm"
                           variant="ghost"
                           onClick={() => setSelectedCadastro(cadastro)}
-                          className="text-gray-400 hover:text-white hover:bg-white/10"
+                          className="p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -420,17 +481,17 @@ export default function Dashboard() {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleDelete(cadastro.id)}
-                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                          className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </div>
       </div>
 
