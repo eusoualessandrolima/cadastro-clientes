@@ -148,24 +148,50 @@ export default function ConfiguracoesCadastros() {
       return;
     }
     
+    const toastId = 'webhook-test';
+    toast.loading('Testando conexão...', { id: toastId });
+    
+    console.log('🔄 Iniciando teste de webhook...');
+    console.log('📍 URL:', config.webhook_url);
+    
     try {
+      const dadosTeste = {
+        evento: 'teste_conexao',
+        timestamp: new Date().toISOString(),
+        dados: {
+          mensagem: 'Teste de conexão do webhook',
+          sistema: 'Cadastros - CompanyChat IA'
+        }
+      };
+      
+      console.log('📤 Enviando dados:', dadosTeste);
+      
       const response = await fetch(config.webhook_url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          evento: 'teste',
-          timestamp: new Date().toISOString(),
-          dados: { mensagem: 'Teste de conexão do Dashboard de Cadastros' }
-        })
+        body: JSON.stringify(dadosTeste)
       });
 
       if (response.ok) {
-        toast.success('Webhook testado com sucesso!');
+        const responseText = await response.text();
+        console.log('✅ Webhook respondeu com sucesso:', responseText);
+        toast.success('Webhook funcionando!', { 
+          id: toastId,
+          description: 'Conexão estabelecida com sucesso'
+        });
       } else {
-        toast.error('Erro ao testar webhook: ' + response.statusText);
+        console.error('❌ Webhook retornou erro:', response.status, response.statusText);
+        toast.error('Erro ao testar webhook', { 
+          id: toastId,
+          description: `Status ${response.status}: ${response.statusText}`
+        });
       }
     } catch (error: any) {
-      toast.error('Erro de conexão com webhook: ' + error.message);
+      console.error('❌ Erro de conexão com webhook:', error);
+      toast.error('Erro de conexão com webhook', { 
+        id: toastId,
+        description: error.message 
+      });
     }
   }
 
