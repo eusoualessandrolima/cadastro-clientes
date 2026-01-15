@@ -23,12 +23,13 @@ import {
   Link as LinkIcon,
   Download,
   Settings,
-  LayoutDashboard
+  LayoutDashboard,
+  MessageSquare,
+  FileText
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useRequireAuth, useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -54,6 +55,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { STATUS_CADASTRO, getStatusInfo, getAllStatuses } from '@/constants/statusCadastro';
+import { StatusBadge } from '@/components/dashboard/StatusBadge';
 
 interface Cadastro {
   id: string;
@@ -80,8 +83,11 @@ interface Cadastro {
 interface Stats {
   total: number;
   novos: number;
-  emAndamento: number;
-  concluidos: number;
+  emNegociacao: number;
+  aguardandoPagamento: number;
+  ativos: number;
+  pausados: number;
+  cancelados: number;
 }
 
 interface EditFormData {
@@ -102,21 +108,7 @@ interface EditFormData {
   site_empresa: string;
 }
 
-const statusColors: Record<string, string> = {
-  novo: 'bg-blue-500/20 text-blue-400 border-blue-500/40',
-  em_analise: 'bg-purple-500/20 text-purple-400 border-purple-500/40',
-  em_configuracao: 'bg-orange-500/20 text-orange-400 border-orange-500/40',
-  lancamento: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40',
-  ativo: 'bg-[#00FF94]/20 text-[#00FF94] border-[#00FF94]/40',
-};
-
-const statusLabels: Record<string, string> = {
-  novo: 'Novo',
-  em_analise: 'Em Análise',
-  em_configuracao: 'Em Configuração',
-  lancamento: 'Lançamento',
-  ativo: 'Concluído',
-};
+// Status colors and labels are now in constants/statusCadastro.ts
 
 export default function Dashboard() {
   const { loading } = useRequireAuth();
@@ -127,8 +119,11 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats>({
     total: 0,
     novos: 0,
-    emAndamento: 0,
-    concluidos: 0
+    emNegociacao: 0,
+    aguardandoPagamento: 0,
+    ativos: 0,
+    pausados: 0,
+    cancelados: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCadastro, setSelectedCadastro] = useState<Cadastro | null>(null);
@@ -217,16 +212,20 @@ export default function Dashboard() {
 
   function calculateStats(data: Cadastro[]) {
     const novos = data.filter(c => c.status === 'novo').length;
-    const emAndamento = data.filter(c => 
-      ['em_analise', 'em_configuracao', 'lancamento'].includes(c.status)
-    ).length;
-    const concluidos = data.filter(c => c.status === 'ativo').length;
+    const emNegociacao = data.filter(c => c.status === 'em_negociacao').length;
+    const aguardandoPagamento = data.filter(c => c.status === 'aguardando_pagamento').length;
+    const ativos = data.filter(c => c.status === 'ativo').length;
+    const pausados = data.filter(c => c.status === 'pausado').length;
+    const cancelados = data.filter(c => c.status === 'cancelado').length;
 
     setStats({
       total: data.length,
       novos,
-      emAndamento,
-      concluidos
+      emNegociacao,
+      aguardandoPagamento,
+      ativos,
+      pausados,
+      cancelados
     });
   }
 
@@ -239,7 +238,10 @@ export default function Dashboard() {
 
       if (error) throw error;
       
-      toast.success('Status atualizado!');
+      const statusInfo = getStatusInfo(newStatus);
+      toast.success(`Status alterado para "${statusInfo.label}"`, {
+        icon: statusInfo.icone
+      });
       fetchData();
     } catch (error: any) {
       toast.error('Erro ao atualizar: ' + error.message);
@@ -419,25 +421,25 @@ export default function Dashboard() {
             subtitle="+0 últimos 7 dias"
           />
           <MetricCard
-            icon={AlertCircle}
+            icon={FileText}
             label="Novos"
             value={stats.novos}
             color="text-blue-400"
             subtitle="Aguardando análise"
           />
           <MetricCard
-            icon={Clock}
-            label="Em Andamento"
-            value={stats.emAndamento}
+            icon={MessageSquare}
+            label="Em Negociação"
+            value={stats.emNegociacao}
             color="text-yellow-400"
-            subtitle="Em configuração"
+            subtitle="Em contato"
           />
           <MetricCard
             icon={CheckCircle2}
-            label="Concluídos"
-            value={stats.concluidos}
+            label="Ativos"
+            value={stats.ativos}
             color="text-[#00FF94]"
-            subtitle="Implementações finalizadas"
+            subtitle="Implementados"
           />
         </div>
 
@@ -458,14 +460,17 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-400" />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[160px] bg-[#1a1a1a] border-white/20 text-white">
+                <SelectTrigger className="w-[200px] bg-[#1a1a1a] border-white/20 text-white">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1a1a1a] border-white/20 z-50">
                   <SelectItem value="all" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Todos os status</SelectItem>
-                  {Object.entries(statusLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key} className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">
-                      {label}
+                  {getAllStatuses().map((status) => (
+                    <SelectItem key={status.valor} value={status.valor} className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">
+                      <span className="inline-flex items-center gap-2">
+                        <span>{status.icone}</span>
+                        <span>{status.label}</span>
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -604,12 +609,7 @@ export default function Dashboard() {
                       </p>
                     </TableCell>
                     <TableCell>
-                      <Badge 
-                        variant="outline" 
-                        className={statusColors[cadastro.status] || 'bg-gray-500/20 text-gray-400 border-gray-500/40'}
-                      >
-                        {statusLabels[cadastro.status] || cadastro.status}
-                      </Badge>
+                      <StatusBadge status={cadastro.status} />
                     </TableCell>
                     <TableCell>
                       {cadastro.webhook_enviado ? (
@@ -717,24 +717,24 @@ export default function Dashboard() {
               <div>
                 <label className="text-sm text-gray-400 mb-3 block">Alterar Status</label>
                 <div className="flex flex-wrap gap-2">
-                  {Object.entries(statusLabels).map(([key, label]) => {
-                    const isActive = selectedCadastro.status === key;
-                    const colorClasses = statusColors[key] || 'bg-gray-500/20 text-gray-400 border-gray-500/40';
+                  {getAllStatuses().map((status) => {
+                    const isActive = selectedCadastro.status === status.valor;
                     
                     return (
                       <button
-                        key={key}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all border ${
+                        key={status.valor}
+                        className={`px-4 py-2 rounded-lg font-medium transition-all border flex items-center gap-2 ${
                           isActive 
-                            ? colorClasses + ' ring-2 ring-offset-2 ring-offset-zinc-900' 
+                            ? `${status.corBg} ${status.corBorda} ${status.corTexto} ring-2 ring-offset-2 ring-offset-zinc-900` 
                             : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
                         }`}
                         onClick={() => {
-                          handleStatusChange(selectedCadastro.id, key);
-                          setSelectedCadastro({ ...selectedCadastro, status: key });
+                          handleStatusChange(selectedCadastro.id, status.valor);
+                          setSelectedCadastro({ ...selectedCadastro, status: status.valor });
                         }}
                       >
-                        {label}
+                        <span>{status.icone}</span>
+                        <span>{status.label}</span>
                       </button>
                     );
                   })}
@@ -935,11 +935,11 @@ export default function Dashboard() {
                 onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
                 className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
               >
-                <option value="novo">Novo</option>
-                <option value="em_analise">Em Análise</option>
-                <option value="em_configuracao">Em Configuração</option>
-                <option value="lancamento">Lançamento</option>
-                <option value="ativo">Concluído</option>
+                {getAllStatuses().map((status) => (
+                  <option key={status.valor} value={status.valor}>
+                    {status.icone} {status.label}
+                  </option>
+                ))}
               </select>
             </div>
 
