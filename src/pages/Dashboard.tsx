@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, 
@@ -11,7 +11,10 @@ import {
   Eye,
   Trash2,
   RefreshCw,
-  Zap
+  Zap,
+  Search,
+  Filter,
+  X
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useRequireAuth, useAuth } from '@/hooks/useAuth';
@@ -31,6 +34,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -89,6 +100,42 @@ export default function Dashboard() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCadastro, setSelectedCadastro] = useState<Cadastro | null>(null);
+  
+  // Filtros
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [webhookFilter, setWebhookFilter] = useState<string>('all');
+
+  // Dados filtrados
+  const filteredCadastros = useMemo(() => {
+    return cadastros.filter((cadastro) => {
+      // Filtro de busca
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = searchTerm === '' || 
+        cadastro.nome_empresa.toLowerCase().includes(searchLower) ||
+        cadastro.nome_responsavel.toLowerCase().includes(searchLower) ||
+        cadastro.email_principal.toLowerCase().includes(searchLower) ||
+        cadastro.fone_whatsapp.includes(searchTerm);
+      
+      // Filtro de status
+      const matchesStatus = statusFilter === 'all' || cadastro.status === statusFilter;
+      
+      // Filtro de webhook
+      const matchesWebhook = webhookFilter === 'all' || 
+        (webhookFilter === 'sent' && cadastro.webhook_enviado) ||
+        (webhookFilter === 'pending' && !cadastro.webhook_enviado);
+      
+      return matchesSearch && matchesStatus && matchesWebhook;
+    });
+  }, [cadastros, searchTerm, statusFilter, webhookFilter]);
+
+  const hasActiveFilters = searchTerm !== '' || statusFilter !== 'all' || webhookFilter !== 'all';
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setWebhookFilter('all');
+  };
 
   useEffect(() => {
     if (!loading) {
@@ -265,6 +312,72 @@ export default function Dashboard() {
           />
         </div>
 
+        {/* Filtros e Busca */}
+        <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Campo de busca */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Buscar por empresa, responsável, email ou telefone..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-black/50 border-white/10 text-white placeholder:text-gray-500 focus:border-[#00FF94]/50"
+              />
+            </div>
+            
+            {/* Filtro de Status */}
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-gray-400" />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[160px] bg-black/50 border-white/10 text-white">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-white/10">
+                  <SelectItem value="all" className="text-white hover:bg-white/10">Todos os status</SelectItem>
+                  {Object.entries(statusLabels).map(([key, label]) => (
+                    <SelectItem key={key} value={key} className="text-white hover:bg-white/10">
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Filtro de Webhook */}
+            <Select value={webhookFilter} onValueChange={setWebhookFilter}>
+              <SelectTrigger className="w-[160px] bg-black/50 border-white/10 text-white">
+                <SelectValue placeholder="Webhook" />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-white/10">
+                <SelectItem value="all" className="text-white hover:bg-white/10">Todos</SelectItem>
+                <SelectItem value="sent" className="text-white hover:bg-white/10">Enviados</SelectItem>
+                <SelectItem value="pending" className="text-white hover:bg-white/10">Pendentes</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Limpar filtros */}
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                onClick={clearFilters}
+                className="text-gray-400 hover:text-white hover:bg-white/10"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Limpar
+              </Button>
+            )}
+          </div>
+
+          {/* Contador de resultados */}
+          {hasActiveFilters && (
+            <div className="mt-3 text-sm text-gray-400">
+              Mostrando {filteredCadastros.length} de {cadastros.length} cadastros
+            </div>
+          )}
+        </div>
+
         {/* Lista de Cadastros */}
         <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
           <Table>
@@ -280,14 +393,17 @@ export default function Dashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {cadastros.length === 0 ? (
+              {filteredCadastros.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center text-gray-500 py-12">
-                    Nenhum cadastro encontrado
+                    {hasActiveFilters 
+                      ? 'Nenhum cadastro encontrado com os filtros aplicados'
+                      : 'Nenhum cadastro encontrado'
+                    }
                   </TableCell>
                 </TableRow>
               ) : (
-                cadastros.map((cadastro) => (
+                filteredCadastros.map((cadastro) => (
                   <TableRow key={cadastro.id} className="border-white/10 hover:bg-white/5">
                     <TableCell className="font-medium">{cadastro.nome_empresa}</TableCell>
                     <TableCell className="text-gray-400">{cadastro.nome_responsavel}</TableCell>
