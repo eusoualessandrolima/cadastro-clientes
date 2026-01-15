@@ -13,7 +13,9 @@ import {
   LayoutDashboard,
   Users,
   LogOut,
-  Loader2
+  Loader2,
+  Link as LinkIcon,
+  Copy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -225,6 +227,14 @@ export default function ConfiguracoesCadastros() {
     navigate('/login');
   }
 
+  function copiarLinkFormulario() {
+    const linkFormulario = `${window.location.origin}/`;
+    navigator.clipboard.writeText(linkFormulario);
+    toast.success('Link copiado!', {
+      description: 'Cole e compartilhe com seus clientes',
+    });
+  }
+
   if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -293,6 +303,46 @@ export default function ConfiguracoesCadastros() {
 
           {/* Cards de Configuração */}
           <div className="grid gap-6 max-w-4xl">
+
+            {/* Link do Formulário */}
+            <div className="bg-white/5 border border-[#00FF94]/20 rounded-xl p-6">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 bg-[#00FF94]/20 rounded-xl flex items-center justify-center">
+                  <LinkIcon className="w-6 h-6 text-[#00FF94]" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold">Link do Formulário</h2>
+                  <p className="text-gray-400 text-sm">Compartilhe com seus clientes</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* URL do formulário */}
+                <div className="bg-black/50 rounded-lg p-4 border border-[#00FF94]/10">
+                  <p className="text-sm text-gray-400 mb-2">URL pública do formulário:</p>
+                  <p className="text-[#00FF94] font-mono text-sm break-all">
+                    {typeof window !== 'undefined' ? `${window.location.origin}/` : 'https://seudominio.com/'}
+                  </p>
+                </div>
+                
+                {/* Botão copiar */}
+                <Button
+                  onClick={copiarLinkFormulario}
+                  className="w-full bg-[#00FF94] hover:bg-[#00FF94]/90 text-black font-semibold"
+                >
+                  <Copy className="w-5 h-5 mr-2" />
+                  Copiar Link do Formulário
+                </Button>
+                
+                {/* Instruções */}
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                  <p className="text-sm text-blue-200">
+                    💡 <strong>Como usar:</strong> Copie este link e compartilhe com seus clientes por WhatsApp, 
+                    email ou redes sociais. Cada cliente que abrir o link verá um formulário limpo.
+                  </p>
+                </div>
+              </div>
+            </div>
             
             {/* n8n Webhook */}
             <div className="bg-white/5 border border-white/10 rounded-xl p-6">

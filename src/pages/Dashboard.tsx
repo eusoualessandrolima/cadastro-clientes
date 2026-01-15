@@ -333,13 +333,6 @@ export default function Dashboard() {
     navigate('/login');
   }
 
-  function copiarLinkFormulario() {
-    const linkFormulario = `${window.location.origin}/`;
-    navigator.clipboard.writeText(linkFormulario);
-    toast.success('Link copiado!', {
-      description: 'Cole e compartilhe com seus clientes',
-    });
-  }
 
   if (loading || isLoading) {
     return (
@@ -405,14 +398,6 @@ export default function Dashboard() {
               <p className="text-gray-400 text-sm">Visão geral dos clientes cadastrados</p>
             </div>
             <div className="flex gap-3">
-              <Button
-                onClick={copiarLinkFormulario}
-                variant="outline"
-                className="border-[#00FF94]/40 text-[#00FF94] hover:bg-[#00FF94]/20 bg-[#00FF94]/10"
-              >
-                <LinkIcon className="w-4 h-4 mr-2" />
-                Copiar Link do Formulário
-              </Button>
               <Button
                 onClick={fetchData}
                 variant="outline"
