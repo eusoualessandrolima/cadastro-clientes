@@ -2,7 +2,43 @@ import { supabase } from '@/integrations/supabase/client';
 import { FormData } from '@/types/quiz';
 import { parseCurrency } from '@/utils/validation';
 
-const WEBHOOK_URL = 'https://webhook.companychatautomacoeseia.com/webhook/formcliente';
+// Fallback URL - será sobrescrita pela configuração do usuário
+const WEBHOOK_URL_FALLBACK = 'https://webhook.companychatautomacoeseia.com/webhook/formcliente';
+
+// Função para buscar a URL de produção do webhook das configurações do usuário
+async function getWebhookUrlProd(): Promise<string | null> {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) {
+      console.warn('⚠️ Usuário não autenticado, usando URL de fallback');
+      return WEBHOOK_URL_FALLBACK;
+    }
+
+    const { data, error } = await supabase
+      .from('configuracoes_sistema')
+      .select('configuracoes')
+      .eq('user_id', userData.user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Erro ao buscar configurações:', error);
+      return WEBHOOK_URL_FALLBACK;
+    }
+
+    const config = data?.configuracoes as { webhook_url_prod?: string } | null;
+    
+    if (config?.webhook_url_prod) {
+      console.log('📍 Usando URL de produção configurada:', config.webhook_url_prod);
+      return config.webhook_url_prod;
+    }
+
+    console.log('📍 URL de produção não configurada, usando fallback');
+    return WEBHOOK_URL_FALLBACK;
+  } catch (error) {
+    console.error('Erro ao buscar URL do webhook:', error);
+    return WEBHOOK_URL_FALLBACK;
+  }
+}
 
 interface CadastroInsert {
   nome_responsavel: string;
@@ -83,7 +119,16 @@ export async function salvarCadastroNoSupabase(formData: FormData): Promise<{ id
 
 export async function enviarParaWebhookN8n(formData: FormData, cadastroId?: string): Promise<boolean> {
   try {
+    // Buscar URL de produção das configurações
+    const webhookUrl = await getWebhookUrlProd();
+    
+    if (!webhookUrl) {
+      console.warn('⚠️ URL de webhook de produção não configurada');
+      return false;
+    }
+
     const payload = {
+      evento: 'cadastro_novo_finalizado',
       id: cadastroId,
       company: {
         responsibleName: formData.responsibleName,
@@ -130,9 +175,9 @@ export async function enviarParaWebhookN8n(formData: FormData, cadastroId?: stri
       },
     };
 
-    console.log('📤 Enviando para webhook n8n:', WEBHOOK_URL);
+    console.log('📤 Enviando para webhook n8n (PRODUÇÃO):', webhookUrl);
     
-    const response = await fetch(WEBHOOK_URL, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

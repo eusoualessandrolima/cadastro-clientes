@@ -21,7 +21,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
 interface ConfigData {
-  webhook_url: string;
+  webhook_url_test: string;
+  webhook_url_prod: string;
   webhook_eventos: {
     cadastro_novo: boolean;
     status_alterado: boolean;
@@ -39,7 +40,8 @@ interface ConfigData {
 }
 
 const defaultConfig: ConfigData = {
-  webhook_url: '',
+  webhook_url_test: '',
+  webhook_url_prod: '',
   webhook_eventos: {
     cadastro_novo: true,
     status_alterado: true,
@@ -143,8 +145,8 @@ export default function ConfiguracoesCadastros() {
   }
 
   async function testarWebhook() {
-    if (!config.webhook_url) {
-      toast.error('Insira uma URL de webhook');
+    if (!config.webhook_url_test) {
+      toast.error('Insira uma URL de webhook de teste');
       return;
     }
     
@@ -152,7 +154,7 @@ export default function ConfiguracoesCadastros() {
     toast.loading('Testando conexão...', { id: toastId });
     
     console.log('🔄 Iniciando teste de webhook...');
-    console.log('📍 URL:', config.webhook_url);
+    console.log('📍 URL (TESTE):', config.webhook_url_test);
     
     try {
       const dadosTeste = {
@@ -166,7 +168,7 @@ export default function ConfiguracoesCadastros() {
       
       console.log('📤 Enviando dados:', dadosTeste);
       
-      const response = await fetch(config.webhook_url, {
+      const response = await fetch(config.webhook_url_test, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dadosTeste)
@@ -174,20 +176,20 @@ export default function ConfiguracoesCadastros() {
 
       if (response.ok) {
         const responseText = await response.text();
-        console.log('✅ Webhook respondeu com sucesso:', responseText);
-        toast.success('Webhook funcionando!', { 
+        console.log('✅ Webhook TESTE respondeu com sucesso:', responseText);
+        toast.success('Webhook de teste funcionando!', { 
           id: toastId,
           description: 'Conexão estabelecida com sucesso'
         });
       } else {
-        console.error('❌ Webhook retornou erro:', response.status, response.statusText);
+        console.error('❌ Webhook TESTE retornou erro:', response.status, response.statusText);
         toast.error('Erro ao testar webhook', { 
           id: toastId,
           description: `Status ${response.status}: ${response.statusText}`
         });
       }
     } catch (error: any) {
-      console.error('❌ Erro de conexão com webhook:', error);
+      console.error('❌ Erro de conexão com webhook TESTE:', error);
       toast.error('Erro de conexão com webhook', { 
         id: toastId,
         description: error.message 
@@ -304,17 +306,34 @@ export default function ConfiguracoesCadastros() {
                 </div>
               </div>
 
-              {/* URL do Webhook */}
+              {/* URLs do Webhook */}
               <div className="space-y-4 mb-6">
                 <div>
-                  <Label className="text-sm text-gray-400 mb-2 block">URL do Webhook</Label>
+                  <Label className="text-sm text-gray-400 mb-2 block">URL do Webhook (Teste)</Label>
                   <Input
                     type="url"
-                    value={config.webhook_url}
-                    onChange={(e) => setConfig({...config, webhook_url: e.target.value})}
-                    placeholder="https://n8n.seudominio.com/webhook/..."
+                    value={config.webhook_url_test}
+                    onChange={(e) => setConfig({...config, webhook_url_test: e.target.value})}
+                    placeholder="https://webhook.seudominio.com/webhook-test/..."
                     className="bg-black border-white/10 text-white focus:border-purple-500/50"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    🧪 Esta URL é usada apenas para testar a conexão
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-sm text-gray-400 mb-2 block">URL do Webhook (Produção)</Label>
+                  <Input
+                    type="url"
+                    value={config.webhook_url_prod}
+                    onChange={(e) => setConfig({...config, webhook_url_prod: e.target.value})}
+                    placeholder="https://workflow.seudominio.com/webhook/..."
+                    className="bg-black border-white/10 text-white focus:border-purple-500/50"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    🚀 Esta URL será usada quando o cadastro for finalizado
+                  </p>
                 </div>
 
                 {/* Eventos */}
