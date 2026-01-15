@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { User, Building2, Briefcase, FileText, Mail, Phone, RefreshCw, Zap, DollarSign, MessageSquare } from 'lucide-react';
+import { User, Building2, Briefcase, FileText, Mail, Phone, RefreshCw, Zap, DollarSign, Rocket, Calendar, Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,9 @@ interface FieldErrors {
   phone?: string;
   services?: string;
   contractModel?: string;
-  agreedValue?: string;
+  setupValue?: string;
+  monthlyValue?: string;
+  singleValue?: string;
   paymentMethods?: string;
 }
 
@@ -152,7 +154,15 @@ export function CompanyStep({ formData, updateFormData, onNext }: CompanyStepPro
     if (!validatePhone(formData.phone)) newErrors.phone = 'Telefone inválido';
     if (formData.services.length === 0) newErrors.services = 'Selecione ao menos um serviço';
     if (!formData.contractModel) newErrors.contractModel = 'Selecione um modelo';
-    if (!formData.agreedValue || formData.agreedValue === 'R$ 0,00') newErrors.agreedValue = 'Informe o valor';
+    
+    // Validate values based on contract model
+    if (formData.contractModel === 'monthly') {
+      if (!formData.setupValue || formData.setupValue === 'R$ 0,00') newErrors.setupValue = 'Informe o valor do setup';
+      if (!formData.monthlyValue || formData.monthlyValue === 'R$ 0,00') newErrors.monthlyValue = 'Informe o valor da mensalidade';
+    } else if (formData.contractModel === 'single') {
+      if (!formData.singleValue || formData.singleValue === 'R$ 0,00') newErrors.singleValue = 'Informe o valor do projeto';
+    }
+    
     if (formData.paymentMethods.length === 0) newErrors.paymentMethods = 'Selecione ao menos uma forma';
 
     setErrors(newErrors);
@@ -444,55 +454,162 @@ export function CompanyStep({ formData, updateFormData, onNext }: CompanyStepPro
               )}
             </div>
 
-            {/* Agreed Value */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-cc-white">
-                <DollarSign className="w-4 h-4" /> Valor Acordado *
-              </Label>
-              <Input
-                value={formData.agreedValue}
-                onChange={(e) => updateFormData({ agreedValue: maskCurrency(e.target.value) })}
-                placeholder="R$ 0,00"
-                className={`bg-cc-dark/50 border-cc-white/20 text-cc-white placeholder:text-cc-gray-text ${
-                  errors.agreedValue ? 'border-destructive' : ''
-                }`}
-              />
-              <p className="text-xs text-cc-gray-text">
-                Este é o valor que ficou acertado na proposta comercial
-              </p>
-              {errors.agreedValue && (
-                <motion.p
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="text-sm text-destructive"
+            {/* Dynamic Value Fields based on Contract Model */}
+            <AnimatePresence mode="wait">
+              {formData.contractModel === 'monthly' ? (
+                <motion.div
+                  key="monthly-values"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-4"
                 >
-                  {errors.agreedValue}
-                </motion.p>
-              )}
-            </div>
+                  {/* Setup Value */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2 text-cc-white">
+                      <Rocket className="w-4 h-4 text-orange-500" /> Setup Inicial (Implementação) *
+                    </Label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cc-gray-text">
+                        R$
+                      </span>
+                      <Input
+                        value={formData.setupValue}
+                        onChange={(e) => updateFormData({ setupValue: maskCurrency(e.target.value) })}
+                        placeholder="0,00"
+                        className={`pl-12 bg-cc-dark/50 border-orange-500/20 text-cc-white placeholder:text-cc-gray-text focus:border-orange-500/50 ${
+                          errors.setupValue ? 'border-destructive' : ''
+                        }`}
+                      />
+                    </div>
+                    <p className="text-xs text-cc-gray-text flex items-start gap-2">
+                      <DollarSign className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                      Pagamento único referente à criação, configuração e implementação
+                    </p>
+                    {errors.setupValue && (
+                      <motion.p
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="text-sm text-destructive"
+                      >
+                        {errors.setupValue}
+                      </motion.p>
+                    )}
+                  </div>
 
-            {/* Value Notes (optional) */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-cc-white">
-                <MessageSquare className="w-4 h-4" /> Observações sobre o Valor (opcional)
-              </Label>
-              <textarea
-                value={formData.valueNotes}
-                onChange={(e) => updateFormData({ valueNotes: e.target.value })}
-                placeholder="Ex: Desconto de 10% aplicado, Pagamento dividido em 3x, Promoção Black Friday, etc."
-                rows={3}
-                maxLength={500}
-                className="w-full px-4 py-3 bg-cc-dark/50 border border-cc-white/20 rounded-lg text-cc-white placeholder:text-cc-gray-text focus:border-cc-green/50 focus:outline-none resize-none"
-              />
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-cc-gray-text">
-                  💡 Use para detalhar descontos, condições especiais, parcelamento, etc.
-                </p>
-                <span className="text-xs text-cc-gray-text">
-                  {formData.valueNotes.length}/500
-                </span>
-              </div>
-            </div>
+                  {/* Monthly Value */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2 text-cc-white">
+                      <RefreshCw className="w-4 h-4 text-cc-green" /> Valor da Mensalidade *
+                    </Label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cc-gray-text">
+                        R$
+                      </span>
+                      <Input
+                        value={formData.monthlyValue}
+                        onChange={(e) => updateFormData({ monthlyValue: maskCurrency(e.target.value) })}
+                        placeholder="0,00"
+                        className={`pl-12 pr-16 bg-cc-dark/50 border-cc-green/20 text-cc-white placeholder:text-cc-gray-text focus:border-cc-green/50 ${
+                          errors.monthlyValue ? 'border-destructive' : ''
+                        }`}
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-cc-gray-text text-sm">
+                        /mês
+                      </span>
+                    </div>
+                    <p className="text-xs text-cc-gray-text flex items-start gap-2">
+                      <Calendar className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                      Cobrança recorrente mensal (começa após 30 dias)
+                    </p>
+                    {errors.monthlyValue && (
+                      <motion.p
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="text-sm text-destructive"
+                      >
+                        {errors.monthlyValue}
+                      </motion.p>
+                    )}
+                  </div>
+
+                  {/* Investment Summary Preview */}
+                  <div className="bg-gradient-to-r from-cc-green/10 to-blue-500/10 border border-cc-green/20 rounded-xl p-5">
+                    <p className="text-sm text-cc-gray-text mb-3">💰 Resumo do Investimento:</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-cc-white">Setup Inicial:</span>
+                        <span className="text-orange-400 font-bold">
+                          {formData.setupValue || 'R$ 0,00'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-cc-white">Mensalidade:</span>
+                        <span className="text-cc-green font-bold">
+                          {formData.monthlyValue || 'R$ 0,00'}/mês
+                        </span>
+                      </div>
+                      <div className="pt-2 border-t border-cc-white/10">
+                        <p className="text-xs text-cc-gray-text">
+                          Pagamento recorrente inicia após 30 dias da implementação
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : formData.contractModel === 'single' ? (
+                <motion.div
+                  key="single-value"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-4"
+                >
+                  {/* Single Value */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2 text-cc-white">
+                      <DollarSign className="w-4 h-4 text-cc-green" /> Valor do Projeto *
+                    </Label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cc-gray-text">
+                        R$
+                      </span>
+                      <Input
+                        value={formData.singleValue}
+                        onChange={(e) => updateFormData({ singleValue: maskCurrency(e.target.value) })}
+                        placeholder="0,00"
+                        className={`pl-12 bg-cc-dark/50 border-cc-green/20 text-cc-white placeholder:text-cc-gray-text focus:border-cc-green/50 ${
+                          errors.singleValue ? 'border-destructive' : ''
+                        }`}
+                      />
+                    </div>
+                    <p className="text-xs text-cc-gray-text flex items-start gap-2">
+                      <Zap className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                      Pagamento único, sem mensalidade
+                    </p>
+                    {errors.singleValue && (
+                      <motion.p
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="text-sm text-destructive"
+                      >
+                        {errors.singleValue}
+                      </motion.p>
+                    )}
+                  </div>
+
+                  {/* Info box */}
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+                    <p className="text-sm text-blue-300 flex items-start gap-2">
+                      <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      <span>
+                        Projeto com pagamento único, ideal para implementações pontuais ou projetos específicos.
+                      </span>
+                    </p>
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
 
             {/* Payment Methods */}
             <div className="space-y-3">

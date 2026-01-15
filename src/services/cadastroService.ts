@@ -13,8 +13,9 @@ interface CadastroInsert {
   fone_whatsapp: string;
   servicos_contratados: string[];
   modelo_contratacao: string;
-  valor_acordado: number;
-  observacoes_valor: string | null;
+  valor_setup: number | null;
+  valor_mensalidade: number | null;
+  valor_unico: number | null;
   forma_pagamento: string[];
   lembrete_pagamento: boolean | null;
   funcao_principal: string[];
@@ -43,8 +44,9 @@ export async function salvarCadastroNoSupabase(formData: FormData): Promise<{ id
     fone_whatsapp: formData.phone,
     servicos_contratados: formData.services,
     modelo_contratacao: formData.contractModel,
-    valor_acordado: parseCurrency(formData.agreedValue),
-    observacoes_valor: formData.valueNotes || null,
+    valor_setup: formData.contractModel === 'monthly' ? parseCurrency(formData.setupValue) : null,
+    valor_mensalidade: formData.contractModel === 'monthly' ? parseCurrency(formData.monthlyValue) : null,
+    valor_unico: formData.contractModel === 'single' ? parseCurrency(formData.singleValue) : null,
     forma_pagamento: formData.paymentMethods,
     lembrete_pagamento: formData.recurringReminder,
     funcao_principal: formData.mainFunctions,
@@ -96,8 +98,9 @@ export async function enviarParaWebhookN8n(formData: FormData, cadastroId?: stri
       agreement: {
         services: formData.services,
         contractModel: formData.contractModel,
-        agreedValue: parseCurrency(formData.agreedValue),
-        valueNotes: formData.valueNotes,
+        setupValue: formData.contractModel === 'monthly' ? parseCurrency(formData.setupValue) : null,
+        monthlyValue: formData.contractModel === 'monthly' ? parseCurrency(formData.monthlyValue) : null,
+        singleValue: formData.contractModel === 'single' ? parseCurrency(formData.singleValue) : null,
         paymentMethods: formData.paymentMethods,
         recurringReminder: formData.recurringReminder,
       },
