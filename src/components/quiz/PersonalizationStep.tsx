@@ -86,7 +86,7 @@ export function PersonalizationStep({ formData, updateFormData, onNext }: Person
 
   return (
     <div className="min-h-screen bg-cc-black">
-      <ProgressBar progress={50} label="Bloco 2 de 4 - Personalização da IA" />
+      <ProgressBar progress={66} label="Bloco 2 de 3 - Personalização da IA" />
 
       <div className="pt-24 pb-12 px-4 max-w-2xl mx-auto">
         <motion.div

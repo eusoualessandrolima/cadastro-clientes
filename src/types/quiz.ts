@@ -22,7 +22,6 @@ export interface FormData {
   mainFunctions: string[];
   top5Questions: string;
   communicationTone: string;
-  existingSolutions: string[];
   
   // Digital presence
   contactPhones: string;
@@ -54,7 +53,6 @@ export const initialFormData: FormData = {
   mainFunctions: [],
   top5Questions: '',
   communicationTone: '',
-  existingSolutions: [],
   contactPhones: '',
   paymentMethodsAccepted: '',
   address: '',
@@ -70,7 +68,6 @@ export type QuizStep =
   | 'welcome'
   | 'company'
   | 'personalization'
-  | 'integration'
   | 'digital'
   | 'materials'
   | 'success';
@@ -78,10 +75,9 @@ export type QuizStep =
 export const STEP_PROGRESS: Record<QuizStep, number> = {
   loading: 0,
   welcome: 0,
-  company: 25,
-  personalization: 50,
-  integration: 75,
-  digital: 90,
-  materials: 95,
+  company: 33,
+  personalization: 66,
+  digital: 100,
+  materials: 100,
   success: 100,
 };

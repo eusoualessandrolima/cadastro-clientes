@@ -57,7 +57,7 @@ export function DigitalStep({ formData, updateFormData, onNext }: DigitalStepPro
 
   return (
     <div className="min-h-screen bg-cc-black">
-      <ProgressBar progress={90} label="Bloco 4 de 4 - Presença Digital" />
+      <ProgressBar progress={100} label="Bloco 3 de 3 - Presença Digital" />
 
       <div className="pt-24 pb-12 px-4 max-w-2xl mx-auto">
         <motion.div

@@ -183,7 +183,7 @@ export function CompanyStep({ formData, updateFormData, onNext }: CompanyStepPro
 
   return (
     <div className="min-h-screen bg-cc-black">
-      <ProgressBar progress={25} label="Bloco 1 de 4 - Informações da Empresa e Acordo Comercial" />
+      <ProgressBar progress={33} label="Bloco 1 de 3 - Informações da Empresa e Acordo Comercial" />
 
       <div className="pt-24 pb-12 px-4 max-w-2xl mx-auto">
         <motion.div
