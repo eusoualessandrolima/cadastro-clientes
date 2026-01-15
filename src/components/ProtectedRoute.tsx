@@ -30,9 +30,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         );
     }
 
-    // Se não está autenticado, redireciona para login
+    // Se não está autenticado, redireciona para "/" (login)
     if (!user) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/" replace />;
     }
 
     // Se está autenticado, renderiza o conteúdo
