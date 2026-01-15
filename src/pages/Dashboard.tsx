@@ -2,10 +2,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, 
-  TrendingUp, 
-  DollarSign, 
   Clock,
-  CheckCircle,
+  CheckCircle2,
   AlertCircle,
   LogOut,
   Eye,
@@ -14,7 +12,8 @@ import {
   Zap,
   Search,
   Filter,
-  X
+  X,
+  CheckCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useRequireAuth, useAuth } from '@/hooks/useAuth';
@@ -64,9 +63,7 @@ interface Stats {
   total: number;
   novos: number;
   emAndamento: number;
-  ativos: number;
-  ticketMedio: number;
-  totalRecorrente: number;
+  concluidos: number;
 }
 
 const statusColors: Record<string, string> = {
@@ -94,9 +91,7 @@ export default function Dashboard() {
     total: 0,
     novos: 0,
     emAndamento: 0,
-    ativos: 0,
-    ticketMedio: 0,
-    totalRecorrente: 0
+    concluidos: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCadastro, setSelectedCadastro] = useState<Cadastro | null>(null);
@@ -168,26 +163,13 @@ export default function Dashboard() {
     const emAndamento = data.filter(c => 
       ['em_analise', 'em_configuracao', 'lancamento'].includes(c.status)
     ).length;
-    const ativos = data.filter(c => c.status === 'ativo').length;
-    
-    const valoresValidos = data
-      .filter(c => c.valor_acordado)
-      .map(c => Number(c.valor_acordado));
-    const ticketMedio = valoresValidos.length > 0 
-      ? valoresValidos.reduce((a, b) => a + b, 0) / valoresValidos.length 
-      : 0;
-    
-    const recorrentes = data
-      .filter(c => c.modelo_contratacao === 'monthly' && c.status === 'ativo')
-      .reduce((sum, c) => sum + (Number(c.valor_acordado) || 0), 0);
+    const concluidos = data.filter(c => c.status === 'ativo').length;
 
     setStats({
       total: data.length,
       novos,
       emAndamento,
-      ativos,
-      ticketMedio,
-      totalRecorrente: recorrentes
+      concluidos
     });
   }
 
@@ -272,43 +254,35 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Cards de Métricas */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        {/* Cards de Métricas - Grid de 4 colunas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <MetricCard
             icon={Users}
             label="Total de Cadastros"
             value={stats.total}
             color="text-white"
+            subtitle="+0 últimos 7 dias"
           />
           <MetricCard
             icon={AlertCircle}
             label="Novos"
             value={stats.novos}
             color="text-blue-400"
+            subtitle="Aguardando análise"
           />
           <MetricCard
             icon={Clock}
             label="Em Andamento"
             value={stats.emAndamento}
             color="text-yellow-400"
+            subtitle="Em configuração"
           />
           <MetricCard
-            icon={CheckCircle}
-            label="Ativos"
-            value={stats.ativos}
-            color="text-green-400"
-          />
-          <MetricCard
-            icon={DollarSign}
-            label="Ticket Médio"
-            value={`R$ ${stats.ticketMedio.toFixed(0)}`}
+            icon={CheckCircle2}
+            label="Concluídos"
+            value={stats.concluidos}
             color="text-[#00FF94]"
-          />
-          <MetricCard
-            icon={TrendingUp}
-            label="MRR"
-            value={`R$ ${stats.totalRecorrente.toFixed(0)}`}
-            color="text-[#00FF94]"
+            subtitle="Implementações finalizadas"
           />
         </div>
 
@@ -520,11 +494,12 @@ export default function Dashboard() {
   );
 }
 
-function MetricCard({ icon: Icon, label, value, color }: {
+function MetricCard({ icon: Icon, label, value, color, subtitle }: {
   icon: any;
   label: string;
   value: string | number;
   color: string;
+  subtitle?: string;
 }) {
   return (
     <motion.div
@@ -539,6 +514,9 @@ function MetricCard({ icon: Icon, label, value, color }: {
       </div>
       <p className="text-xs text-gray-400 mb-1">{label}</p>
       <p className={`text-xl font-bold ${color}`}>{value}</p>
+      {subtitle && (
+        <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
+      )}
     </motion.div>
   );
 }
