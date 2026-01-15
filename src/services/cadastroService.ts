@@ -14,6 +14,7 @@ interface CadastroInsert {
   servicos_contratados: string[];
   modelo_contratacao: string;
   valor_acordado: number;
+  observacoes_valor: string | null;
   forma_pagamento: string[];
   lembrete_pagamento: boolean | null;
   funcao_principal: string[];
@@ -43,6 +44,7 @@ export async function salvarCadastroNoSupabase(formData: FormData): Promise<{ id
     servicos_contratados: formData.services,
     modelo_contratacao: formData.contractModel,
     valor_acordado: parseCurrency(formData.agreedValue),
+    observacoes_valor: formData.valueNotes || null,
     forma_pagamento: formData.paymentMethods,
     lembrete_pagamento: formData.recurringReminder,
     funcao_principal: formData.mainFunctions,
@@ -95,6 +97,7 @@ export async function enviarParaWebhookN8n(formData: FormData, cadastroId?: stri
         services: formData.services,
         contractModel: formData.contractModel,
         agreedValue: parseCurrency(formData.agreedValue),
+        valueNotes: formData.valueNotes,
         paymentMethods: formData.paymentMethods,
         recurringReminder: formData.recurringReminder,
       },

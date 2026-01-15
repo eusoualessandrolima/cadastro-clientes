@@ -32,6 +32,7 @@ export type Database = {
           modelo_contratacao: string | null
           nome_empresa: string
           nome_responsavel: string
+          observacoes_valor: string | null
           origem: string | null
           perguntas_comuns: string | null
           segmento_produto_servico: string | null
@@ -63,6 +64,7 @@ export type Database = {
           modelo_contratacao?: string | null
           nome_empresa: string
           nome_responsavel: string
+          observacoes_valor?: string | null
           origem?: string | null
           perguntas_comuns?: string | null
           segmento_produto_servico?: string | null
@@ -94,6 +96,7 @@ export type Database = {
           modelo_contratacao?: string | null
           nome_empresa?: string
           nome_responsavel?: string
+          observacoes_valor?: string | null
           origem?: string | null
           perguntas_comuns?: string | null
           segmento_produto_servico?: string | null

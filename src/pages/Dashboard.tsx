@@ -66,6 +66,7 @@ interface Cadastro {
   servicos_contratados: string[] | null;
   modelo_contratacao: string | null;
   valor_acordado: number | null;
+  observacoes_valor?: string | null;
   status: string;
   webhook_enviado: boolean;
   cpf_cnpj?: string | null;
@@ -89,6 +90,7 @@ interface EditFormData {
   email_principal: string;
   fone_whatsapp: string;
   valor_acordado: string;
+  observacoes_valor: string;
   modelo_contratacao: string;
   status: string;
   cpf_cnpj: string;
@@ -138,6 +140,7 @@ export default function Dashboard() {
     email_principal: '',
     fone_whatsapp: '',
     valor_acordado: '',
+    observacoes_valor: '',
     modelo_contratacao: '',
     status: 'novo',
     cpf_cnpj: '',
@@ -267,6 +270,7 @@ export default function Dashboard() {
       email_principal: cadastro.email_principal || '',
       fone_whatsapp: cadastro.fone_whatsapp || '',
       valor_acordado: cadastro.valor_acordado?.toString() || '',
+      observacoes_valor: cadastro.observacoes_valor || '',
       modelo_contratacao: cadastro.modelo_contratacao || 'monthly',
       status: cadastro.status || 'novo',
       cpf_cnpj: cadastro.cpf_cnpj || '',
@@ -289,6 +293,7 @@ export default function Dashboard() {
         email_principal: editFormData.email_principal,
         fone_whatsapp: editFormData.fone_whatsapp,
         valor_acordado: editFormData.valor_acordado ? parseFloat(editFormData.valor_acordado) : null,
+        observacoes_valor: editFormData.observacoes_valor || null,
         modelo_contratacao: editFormData.modelo_contratacao || null,
         status: editFormData.status,
         cpf_cnpj: editFormData.cpf_cnpj || null,
@@ -685,6 +690,18 @@ export default function Dashboard() {
                   value={selectedCadastro.modelo_contratacao === 'monthly' ? 'Mensal' : selectedCadastro.modelo_contratacao === 'single' ? 'Único' : selectedCadastro.modelo_contratacao || '-'} 
                 />
               </div>
+
+              {/* Observações sobre o Valor */}
+              {selectedCadastro.observacoes_valor && (
+                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                  <p className="text-xs text-blue-400 mb-2 font-semibold">
+                    📝 Observações sobre o Valor:
+                  </p>
+                  <p className="text-sm text-gray-300 italic">
+                    "{selectedCadastro.observacoes_valor}"
+                  </p>
+                </div>
+              )}
               
               <div>
                 <label className="text-sm text-gray-400 mb-3 block">Alterar Status</label>
@@ -868,6 +885,20 @@ export default function Dashboard() {
                   <option value="unique">Único</option>
                 </select>
               </div>
+            </div>
+
+            {/* Observações sobre o Valor */}
+            <div>
+              <label className="text-sm text-gray-400 block mb-2">
+                Observações sobre o Valor
+              </label>
+              <textarea
+                value={editFormData.observacoes_valor}
+                onChange={(e) => setEditFormData({...editFormData, observacoes_valor: e.target.value})}
+                placeholder="Descontos, condições especiais, parcelamento, etc."
+                rows={3}
+                className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors resize-none"
+              />
             </div>
 
             {/* Status */}

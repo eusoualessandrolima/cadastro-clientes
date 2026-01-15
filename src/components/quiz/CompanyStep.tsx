@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { User, Building2, Briefcase, FileText, Mail, Phone, RefreshCw, Zap, DollarSign } from 'lucide-react';
+import { User, Building2, Briefcase, FileText, Mail, Phone, RefreshCw, Zap, DollarSign, MessageSquare } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -469,6 +469,29 @@ export function CompanyStep({ formData, updateFormData, onNext }: CompanyStepPro
                   {errors.agreedValue}
                 </motion.p>
               )}
+            </div>
+
+            {/* Value Notes (optional) */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-cc-white">
+                <MessageSquare className="w-4 h-4" /> Observações sobre o Valor (opcional)
+              </Label>
+              <textarea
+                value={formData.valueNotes}
+                onChange={(e) => updateFormData({ valueNotes: e.target.value })}
+                placeholder="Ex: Desconto de 10% aplicado, Pagamento dividido em 3x, Promoção Black Friday, etc."
+                rows={3}
+                maxLength={500}
+                className="w-full px-4 py-3 bg-cc-dark/50 border border-cc-white/20 rounded-lg text-cc-white placeholder:text-cc-gray-text focus:border-cc-green/50 focus:outline-none resize-none"
+              />
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-cc-gray-text">
+                  💡 Use para detalhar descontos, condições especiais, parcelamento, etc.
+                </p>
+                <span className="text-xs text-cc-gray-text">
+                  {formData.valueNotes.length}/500
+                </span>
+              </div>
             </div>
 
             {/* Payment Methods */}

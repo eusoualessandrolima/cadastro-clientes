@@ -11,6 +11,7 @@ export interface FormData {
   services: string[];
   contractModel: 'monthly' | 'single' | '';
   agreedValue: string;
+  valueNotes: string;
   paymentMethods: string[];
   recurringReminder: boolean | null;
   
@@ -43,6 +44,7 @@ export const initialFormData: FormData = {
   services: [],
   contractModel: '',
   agreedValue: '',
+  valueNotes: '',
   paymentMethods: [],
   recurringReminder: null,
   mainFunctions: [],
