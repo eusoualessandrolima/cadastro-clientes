@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState, useCallback } from 'react';
-import { Upload, X, FileText, Loader2, Rocket } from 'lucide-react';
+import { Upload, X, FileText } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -11,11 +11,11 @@ import { celebrateExcellent, microConfetti } from '@/utils/confetti';
 interface MaterialsStepProps {
   formData: FormData;
   updateFormData: (data: Partial<FormData>) => void;
-  onSubmit: () => void;
-  isSubmitting: boolean;
+  onNext: () => void;
+  onBack?: () => void;
 }
 
-export function MaterialsStep({ formData, updateFormData, onSubmit, isSubmitting }: MaterialsStepProps) {
+export function MaterialsStep({ formData, updateFormData, onNext, onBack }: MaterialsStepProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [hasShownExcellent, setHasShownExcellent] = useState(false);
 
@@ -97,7 +97,7 @@ export function MaterialsStep({ formData, updateFormData, onSubmit, isSubmitting
 
   return (
     <div className="min-h-screen bg-cc-black">
-      <ProgressBar progress={95} label="Últimos detalhes" />
+      <ProgressBar progress={90} label="Bloco 4 de 4 - Materiais e Informações" />
 
       <div className="pt-24 pb-12 px-4 max-w-2xl mx-auto">
         <motion.div
@@ -213,35 +213,28 @@ export function MaterialsStep({ formData, updateFormData, onSubmit, isSubmitting
             )}
           </div>
 
-          {/* Submit Button */}
-          <motion.div
-            whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
-            whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
-          >
-            <Button
-              onClick={onSubmit}
-              disabled={isSubmitting}
-              className="w-full bg-cc-green text-cc-black font-semibold text-lg py-6 hover:bg-cc-green/90 glow-green-intense disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <motion.span
-                    animate={{ y: [0, -3, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="inline-flex items-center gap-2"
-                  >
-                    <Rocket className="w-5 h-5" />
-                    Finalizar Cadastro →
-                  </motion.span>
-                </>
-              )}
-            </Button>
-          </motion.div>
+          {/* Navigation Buttons */}
+          <div className="flex gap-4">
+            {onBack && (
+              <motion.div className="flex-1" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  onClick={onBack}
+                  variant="outline"
+                  className="w-full bg-cc-dark hover:bg-cc-dark/80 border-cc-gray-text/30 text-cc-white font-semibold text-lg py-6"
+                >
+                  ← Voltar
+                </Button>
+              </motion.div>
+            )}
+            <motion.div className={onBack ? "flex-1" : "w-full"} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                onClick={onNext}
+                className="w-full bg-cc-green text-cc-black font-semibold text-lg py-6 hover:bg-cc-green/90 glow-green"
+              >
+                Continuar →
+              </Button>
+            </motion.div>
+          </div>
         </motion.div>
       </div>
     </div>

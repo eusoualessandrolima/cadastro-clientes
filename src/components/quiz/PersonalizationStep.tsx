@@ -12,6 +12,7 @@ interface PersonalizationStepProps {
   formData: FormData;
   updateFormData: (data: Partial<FormData>) => void;
   onNext: () => void;
+  onBack?: () => void;
 }
 
 const mainFunctions = [
@@ -29,7 +30,7 @@ const communicationTones = [
   { id: 'consultive', icon: '💡', label: 'Consultivo e educativo', preview: 'Boa pergunta! Vou explicar como funciona...' },
 ];
 
-export function PersonalizationStep({ formData, updateFormData, onNext }: PersonalizationStepProps) {
+export function PersonalizationStep({ formData, updateFormData, onNext, onBack }: PersonalizationStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasShownMilestone, setHasShownMilestone] = useState(false);
 
@@ -86,7 +87,7 @@ export function PersonalizationStep({ formData, updateFormData, onNext }: Person
 
   return (
     <div className="min-h-screen bg-cc-black">
-      <ProgressBar progress={66} label="Bloco 2 de 3 - Personalização da IA" />
+      <ProgressBar progress={50} label="Bloco 2 de 4 - Personalização da IA" />
 
       <div className="pt-24 pb-12 px-4 max-w-2xl mx-auto">
         <motion.div
@@ -210,15 +211,28 @@ export function PersonalizationStep({ formData, updateFormData, onNext }: Person
             )}
           </div>
 
-          {/* Submit Button */}
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button
-              onClick={handleSubmit}
-              className="w-full bg-cc-green text-cc-black font-semibold text-lg py-6 hover:bg-cc-green/90 glow-green"
-            >
-              Continuar →
-            </Button>
-          </motion.div>
+          {/* Navigation Buttons */}
+          <div className="flex gap-4">
+            {onBack && (
+              <motion.div className="flex-1" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  onClick={onBack}
+                  variant="outline"
+                  className="w-full bg-cc-dark hover:bg-cc-dark/80 border-cc-gray-text/30 text-cc-white font-semibold text-lg py-6"
+                >
+                  ← Voltar
+                </Button>
+              </motion.div>
+            )}
+            <motion.div className={onBack ? "flex-1" : "w-full"} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                onClick={handleSubmit}
+                className="w-full bg-cc-green text-cc-black font-semibold text-lg py-6 hover:bg-cc-green/90 glow-green"
+              >
+                Continuar →
+              </Button>
+            </motion.div>
+          </div>
         </motion.div>
       </div>
     </div>
