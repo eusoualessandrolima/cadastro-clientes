@@ -19,28 +19,42 @@ export function Quiz() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  // Load saved data on mount
+  // Clear localStorage on mount for fresh sessions (shared links)
+  // Only use sessionStorage for current session persistence
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        const hoursSince = (Date.now() - data.timestamp) / 1000 / 60 / 60;
-        if (hoursSince < 24 && data.step !== 'loading' && data.step !== 'success') {
-          setFormData({ ...initialFormData, ...data.formData, uploadedFiles: [] });
-          setStep(data.step);
+    // Check if this is a new browser session (no session ID in sessionStorage)
+    const sessionId = sessionStorage.getItem('form_session_id');
+    
+    if (!sessionId) {
+      // New session - clear any old localStorage data and start fresh
+      localStorage.removeItem(STORAGE_KEY);
+      console.log('🆕 Nova sessão de formulário iniciada - dados limpos');
+      
+      // Create new session ID
+      sessionStorage.setItem('form_session_id', Date.now().toString());
+    } else {
+      // Existing session - try to restore data from sessionStorage only
+      const savedSession = sessionStorage.getItem(STORAGE_KEY);
+      if (savedSession) {
+        try {
+          const data = JSON.parse(savedSession);
+          if (data.step !== 'loading' && data.step !== 'success') {
+            setFormData({ ...initialFormData, ...data.formData, uploadedFiles: [] });
+            setStep(data.step);
+            console.log('♻️ Sessão existente - dados restaurados');
+          }
+        } catch (e) {
+          console.error('Error loading saved data:', e);
         }
-      } catch (e) {
-        console.error('Error loading saved data:', e);
       }
     }
   }, []);
 
-  // Save data on change
+  // Save data to sessionStorage only (not localStorage) - persists during current session only
   useEffect(() => {
     if (step !== 'loading' && step !== 'success') {
       const { uploadedFiles, ...dataToSave } = formData;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
         step,
         formData: dataToSave,
         timestamp: Date.now(),
@@ -71,7 +85,10 @@ export function Quiz() {
       // Salvar no banco e enviar para n8n webhook
       await finalizarCadastro(formData);
       
+      // Clear both storages on success
       localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem('form_session_id');
       setStep('success');
     } catch (error) {
       console.error('Submit error:', error);
