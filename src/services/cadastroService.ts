@@ -21,7 +21,6 @@ interface CadastroInsert {
   funcao_principal: string[];
   perguntas_comuns: string;
   tom_comunicacao: string;
-  solucoes_existentes: string[];
   telefone_contato: string;
   formas_pagamento_aceitas: string;
   endereco_empresa: string;
@@ -52,7 +51,6 @@ export async function salvarCadastroNoSupabase(formData: FormData): Promise<{ id
     funcao_principal: formData.mainFunctions,
     perguntas_comuns: formData.top5Questions,
     tom_comunicacao: formData.communicationTone,
-    solucoes_existentes: formData.existingSolutions,
     telefone_contato: formData.contactPhones,
     formas_pagamento_aceitas: formData.paymentMethodsAccepted,
     endereco_empresa: formData.address,
@@ -108,7 +106,6 @@ export async function enviarParaWebhookN8n(formData: FormData, cadastroId?: stri
         mainFunctions: formData.mainFunctions,
         top5Questions: formData.top5Questions,
         communicationTone: formData.communicationTone,
-        existingSolutions: formData.existingSolutions,
       },
       digital: {
         contactPhones: formData.contactPhones,

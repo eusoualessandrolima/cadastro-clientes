@@ -37,7 +37,6 @@ export type Database = {
           segmento_produto_servico: string | null
           servicos_contratados: string[] | null
           site_empresa: string | null
-          solucoes_existentes: string[] | null
           status: string | null
           telefone_contato: string | null
           tom_comunicacao: string | null
@@ -70,7 +69,6 @@ export type Database = {
           segmento_produto_servico?: string | null
           servicos_contratados?: string[] | null
           site_empresa?: string | null
-          solucoes_existentes?: string[] | null
           status?: string | null
           telefone_contato?: string | null
           tom_comunicacao?: string | null
@@ -103,7 +101,6 @@ export type Database = {
           segmento_produto_servico?: string | null
           servicos_contratados?: string[] | null
           site_empresa?: string | null
-          solucoes_existentes?: string[] | null
           status?: string | null
           telefone_contato?: string | null
           tom_comunicacao?: string | null

@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { WelcomeStep } from './WelcomeStep';
 import { CompanyStep } from './CompanyStep';
 import { PersonalizationStep } from './PersonalizationStep';
-import { IntegrationStep } from './IntegrationStep';
 import { DigitalStep } from './DigitalStep';
 import { MaterialsStep } from './MaterialsStep';
 import { SuccessStep } from './SuccessStep';
@@ -82,10 +81,8 @@ export function Quiz() {
         transition={{ duration: 0.3 }}
       >
         {step === 'welcome' && <WelcomeStep onNext={() => setStep('company')} />}
-        {step === 'welcome' && <WelcomeStep onNext={() => setStep('company')} />}
         {step === 'company' && <CompanyStep formData={formData} updateFormData={updateFormData} onNext={() => setStep('personalization')} />}
-        {step === 'personalization' && <PersonalizationStep formData={formData} updateFormData={updateFormData} onNext={() => setStep('integration')} />}
-        {step === 'integration' && <IntegrationStep formData={formData} updateFormData={updateFormData} onNext={() => setStep('digital')} />}
+        {step === 'personalization' && <PersonalizationStep formData={formData} updateFormData={updateFormData} onNext={() => setStep('digital')} />}
         {step === 'digital' && <DigitalStep formData={formData} updateFormData={updateFormData} onNext={() => setStep('materials')} />}
         {step === 'materials' && <MaterialsStep formData={formData} updateFormData={updateFormData} onSubmit={handleSubmit} isSubmitting={isSubmitting} />}
         {step === 'success' && <SuccessStep />}
