@@ -17,7 +17,9 @@ import {
   Building2,
   Phone,
   Mail,
-  Plus
+  Plus,
+  Edit,
+  Save
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useRequireAuth, useAuth } from '@/hooks/useAuth';
@@ -36,6 +38,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -61,6 +64,11 @@ interface Cadastro {
   valor_acordado: number | null;
   status: string;
   webhook_enviado: boolean;
+  cpf_cnpj?: string | null;
+  telefone_contato?: string | null;
+  endereco_empresa?: string | null;
+  instagram_empresa?: string | null;
+  site_empresa?: string | null;
 }
 
 interface Stats {
@@ -70,12 +78,28 @@ interface Stats {
   concluidos: number;
 }
 
+interface EditFormData {
+  nome_responsavel: string;
+  nome_empresa: string;
+  segmento_produto_servico: string;
+  email_principal: string;
+  fone_whatsapp: string;
+  valor_acordado: string;
+  modelo_contratacao: string;
+  status: string;
+  cpf_cnpj: string;
+  telefone_contato: string;
+  endereco_empresa: string;
+  instagram_empresa: string;
+  site_empresa: string;
+}
+
 const statusColors: Record<string, string> = {
-  novo: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  em_analise: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  em_configuracao: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  lancamento: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  ativo: 'bg-green-500/20 text-green-400 border-green-500/30',
+  novo: 'bg-blue-500/20 text-blue-400 border-blue-500/40',
+  em_analise: 'bg-purple-500/20 text-purple-400 border-purple-500/40',
+  em_configuracao: 'bg-orange-500/20 text-orange-400 border-orange-500/40',
+  lancamento: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40',
+  ativo: 'bg-[#00FF94]/20 text-[#00FF94] border-[#00FF94]/40',
 };
 
 const statusLabels: Record<string, string> = {
@@ -83,7 +107,7 @@ const statusLabels: Record<string, string> = {
   em_analise: 'Em Análise',
   em_configuracao: 'Em Configuração',
   lancamento: 'Lançamento',
-  ativo: 'Ativo',
+  ativo: 'Concluído',
 };
 
 export default function Dashboard() {
@@ -100,6 +124,25 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCadastro, setSelectedCadastro] = useState<Cadastro | null>(null);
   
+  // Estado do modal de edição
+  const [editingCadastro, setEditingCadastro] = useState<Cadastro | null>(null);
+  const [editFormData, setEditFormData] = useState<EditFormData>({
+    nome_responsavel: '',
+    nome_empresa: '',
+    segmento_produto_servico: '',
+    email_principal: '',
+    fone_whatsapp: '',
+    valor_acordado: '',
+    modelo_contratacao: '',
+    status: 'novo',
+    cpf_cnpj: '',
+    telefone_contato: '',
+    endereco_empresa: '',
+    instagram_empresa: '',
+    site_empresa: '',
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  
   // Filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -108,7 +151,6 @@ export default function Dashboard() {
   // Dados filtrados
   const filteredCadastros = useMemo(() => {
     return cadastros.filter((cadastro) => {
-      // Filtro de busca
       const searchLower = searchTerm.toLowerCase();
       const matchesSearch = searchTerm === '' || 
         cadastro.nome_empresa.toLowerCase().includes(searchLower) ||
@@ -116,10 +158,8 @@ export default function Dashboard() {
         cadastro.email_principal.toLowerCase().includes(searchLower) ||
         cadastro.fone_whatsapp.includes(searchTerm);
       
-      // Filtro de status
       const matchesStatus = statusFilter === 'all' || cadastro.status === statusFilter;
       
-      // Filtro de webhook
       const matchesWebhook = webhookFilter === 'all' || 
         (webhookFilter === 'sent' && cadastro.webhook_enviado) ||
         (webhookFilter === 'pending' && !cadastro.webhook_enviado);
@@ -152,10 +192,12 @@ export default function Dashboard() {
 
       if (error) throw error;
 
+      console.log('=== DADOS CARREGADOS ===', data);
       const cadastrosData = (data || []) as Cadastro[];
       setCadastros(cadastrosData);
       calculateStats(cadastrosData);
     } catch (error: any) {
+      console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar dados: ' + error.message);
     } finally {
       setIsLoading(false);
@@ -211,6 +253,66 @@ export default function Dashboard() {
     }
   }
 
+  function openEditModal(cadastro: Cadastro) {
+    setEditingCadastro(cadastro);
+    setEditFormData({
+      nome_responsavel: cadastro.nome_responsavel || '',
+      nome_empresa: cadastro.nome_empresa || '',
+      segmento_produto_servico: cadastro.segmento_produto_servico || '',
+      email_principal: cadastro.email_principal || '',
+      fone_whatsapp: cadastro.fone_whatsapp || '',
+      valor_acordado: cadastro.valor_acordado?.toString() || '',
+      modelo_contratacao: cadastro.modelo_contratacao || 'monthly',
+      status: cadastro.status || 'novo',
+      cpf_cnpj: cadastro.cpf_cnpj || '',
+      telefone_contato: cadastro.telefone_contato || '',
+      endereco_empresa: cadastro.endereco_empresa || '',
+      instagram_empresa: cadastro.instagram_empresa || '',
+      site_empresa: cadastro.site_empresa || '',
+    });
+  }
+
+  async function handleSaveEdit() {
+    if (!editingCadastro) return;
+    
+    setIsSaving(true);
+    try {
+      const updateData = {
+        nome_responsavel: editFormData.nome_responsavel,
+        nome_empresa: editFormData.nome_empresa,
+        segmento_produto_servico: editFormData.segmento_produto_servico || null,
+        email_principal: editFormData.email_principal,
+        fone_whatsapp: editFormData.fone_whatsapp,
+        valor_acordado: editFormData.valor_acordado ? parseFloat(editFormData.valor_acordado) : null,
+        modelo_contratacao: editFormData.modelo_contratacao || null,
+        status: editFormData.status,
+        cpf_cnpj: editFormData.cpf_cnpj || null,
+        telefone_contato: editFormData.telefone_contato || null,
+        endereco_empresa: editFormData.endereco_empresa || null,
+        instagram_empresa: editFormData.instagram_empresa || null,
+        site_empresa: editFormData.site_empresa || null,
+      };
+
+      console.log('=== SALVANDO EDIÇÃO ===', updateData);
+
+      const { error } = await supabase
+        .from('cadastros_clientes')
+        .update(updateData)
+        .eq('id', editingCadastro.id);
+
+      if (error) throw error;
+
+      toast.success('Cadastro atualizado com sucesso!');
+      setEditingCadastro(null);
+      fetchData();
+    } catch (error: any) {
+      console.error('Erro ao salvar edição:', error);
+      toast.error('Erro ao atualizar cadastro: ' + error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   async function handleLogout() {
     await signOut();
     navigate('/login');
@@ -242,15 +344,14 @@ export default function Dashboard() {
             <Button
               onClick={fetchData}
               variant="outline"
-              className="border-white/10 text-white hover:bg-white/5"
+              className="border-white/20 text-white hover:bg-white/10 bg-white/5"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Atualizar
             </Button>
             <Button
               onClick={handleLogout}
-              variant="outline"
-              className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+              className="bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-400 hover:text-red-300"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Sair
@@ -258,7 +359,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Cards de Métricas - Grid de 4 colunas */}
+        {/* Cards de Métricas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <MetricCard
             icon={Users}
@@ -293,7 +394,6 @@ export default function Dashboard() {
         {/* Filtros e Busca */}
         <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* Campo de busca */}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
@@ -305,14 +405,13 @@ export default function Dashboard() {
               />
             </div>
             
-            {/* Filtro de Status */}
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-400" />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[160px] bg-[#1a1a1a] border-white/10 text-white">
+                <SelectTrigger className="w-[160px] bg-[#1a1a1a] border-white/20 text-white">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-white/10 z-50">
+                <SelectContent className="bg-[#1a1a1a] border-white/20 z-50">
                   <SelectItem value="all" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Todos os status</SelectItem>
                   {Object.entries(statusLabels).map(([key, label]) => (
                     <SelectItem key={key} value={key} className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">
@@ -323,19 +422,17 @@ export default function Dashboard() {
               </Select>
             </div>
 
-            {/* Filtro de Webhook */}
             <Select value={webhookFilter} onValueChange={setWebhookFilter}>
-              <SelectTrigger className="w-[160px] bg-[#1a1a1a] border-white/10 text-white">
+              <SelectTrigger className="w-[160px] bg-[#1a1a1a] border-white/20 text-white">
                 <SelectValue placeholder="Webhook" />
               </SelectTrigger>
-              <SelectContent className="bg-[#1a1a1a] border-white/10 z-50">
+              <SelectContent className="bg-[#1a1a1a] border-white/20 z-50">
                 <SelectItem value="all" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Todos</SelectItem>
                 <SelectItem value="sent" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Enviados</SelectItem>
                 <SelectItem value="pending" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Pendentes</SelectItem>
               </SelectContent>
             </Select>
 
-            {/* Limpar filtros */}
             {hasActiveFilters && (
               <Button
                 variant="ghost"
@@ -348,7 +445,6 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Contador de resultados */}
           {hasActiveFilters && (
             <div className="mt-3 text-sm text-gray-400">
               Mostrando {filteredCadastros.length} de {cadastros.length} cadastros
@@ -388,7 +484,7 @@ export default function Dashboard() {
                 <Button
                   variant="outline"
                   onClick={clearFilters}
-                  className="border-white/10 text-white hover:bg-white/5"
+                  className="border-white/20 text-white hover:bg-white/10"
                 >
                   <X className="w-4 h-4 mr-2" />
                   Limpar Filtros
@@ -443,13 +539,13 @@ export default function Dashboard() {
                         }
                       </p>
                       <p className="text-xs text-gray-500">
-                        {cadastro.modelo_contratacao === 'monthly' ? 'Mensal' : cadastro.modelo_contratacao === 'unique' ? 'Único' : '-'}
+                        {cadastro.modelo_contratacao === 'monthly' ? 'Mensal' : cadastro.modelo_contratacao === 'unique' ? 'Único' : cadastro.modelo_contratacao === 'single' ? 'Único' : '-'}
                       </p>
                     </TableCell>
                     <TableCell>
                       <Badge 
                         variant="outline" 
-                        className={statusColors[cadastro.status] || 'bg-gray-500/20 text-gray-400'}
+                        className={statusColors[cadastro.status] || 'bg-gray-500/20 text-gray-400 border-gray-500/40'}
                       >
                         {statusLabels[cadastro.status] || cadastro.status}
                       </Badge>
@@ -469,22 +565,32 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
+                        {/* Ver Detalhes */}
+                        <button
                           onClick={() => setSelectedCadastro(cadastro)}
-                          className="p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"
+                          className="p-2.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 rounded-lg transition-all group"
+                          title="Ver detalhes"
                         >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
+                          <Eye className="w-4 h-4 text-blue-400 group-hover:text-blue-300" />
+                        </button>
+                        
+                        {/* Editar */}
+                        <button
+                          onClick={() => openEditModal(cadastro)}
+                          className="p-2.5 bg-[#00FF94]/20 hover:bg-[#00FF94]/30 border border-[#00FF94]/40 rounded-lg transition-all group"
+                          title="Editar"
+                        >
+                          <Edit className="w-4 h-4 text-[#00FF94] group-hover:text-[#00FF94]/80" />
+                        </button>
+                        
+                        {/* Excluir */}
+                        <button
                           onClick={() => handleDelete(cadastro.id)}
-                          className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300"
+                          className="p-2.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 rounded-lg transition-all group"
+                          title="Excluir"
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                          <Trash2 className="w-4 h-4 text-red-400 group-hover:text-red-300" />
+                        </button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -500,6 +606,9 @@ export default function Dashboard() {
         <DialogContent className="bg-zinc-900 border-white/10 text-white max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl">{selectedCadastro?.nome_empresa}</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Detalhes completos do cadastro
+            </DialogDescription>
           </DialogHeader>
           {selectedCadastro && (
             <div className="space-y-6 mt-4">
@@ -517,30 +626,34 @@ export default function Dashboard() {
                 />
                 <InfoItem 
                   label="Modelo" 
-                  value={selectedCadastro.modelo_contratacao === 'monthly' ? 'Mensal' : 'Único'} 
+                  value={selectedCadastro.modelo_contratacao === 'monthly' ? 'Mensal' : selectedCadastro.modelo_contratacao === 'single' ? 'Único' : selectedCadastro.modelo_contratacao || '-'} 
                 />
               </div>
               
               <div>
-                <label className="text-sm text-gray-400 mb-2 block">Alterar Status</label>
+                <label className="text-sm text-gray-400 mb-3 block">Alterar Status</label>
                 <div className="flex flex-wrap gap-2">
-                  {Object.entries(statusLabels).map(([key, label]) => (
-                    <Button
-                      key={key}
-                      size="sm"
-                      variant={selectedCadastro.status === key ? 'default' : 'outline'}
-                      className={selectedCadastro.status === key 
-                        ? 'bg-[#00FF94] text-black' 
-                        : 'border-white/10 text-gray-300'
-                      }
-                      onClick={() => {
-                        handleStatusChange(selectedCadastro.id, key);
-                        setSelectedCadastro({ ...selectedCadastro, status: key });
-                      }}
-                    >
-                      {label}
-                    </Button>
-                  ))}
+                  {Object.entries(statusLabels).map(([key, label]) => {
+                    const isActive = selectedCadastro.status === key;
+                    const colorClasses = statusColors[key] || 'bg-gray-500/20 text-gray-400 border-gray-500/40';
+                    
+                    return (
+                      <button
+                        key={key}
+                        className={`px-4 py-2 rounded-lg font-medium transition-all border ${
+                          isActive 
+                            ? colorClasses + ' ring-2 ring-offset-2 ring-offset-zinc-900' 
+                            : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
+                        }`}
+                        onClick={() => {
+                          handleStatusChange(selectedCadastro.id, key);
+                          setSelectedCadastro({ ...selectedCadastro, status: key });
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -549,6 +662,250 @@ export default function Dashboard() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Edição */}
+      <Dialog open={!!editingCadastro} onOpenChange={() => setEditingCadastro(null)}>
+        <DialogContent className="bg-[#1a1a1a] border-[#00FF94]/20 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-white">Editar Cadastro</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Altere os dados do cadastro abaixo
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-5 mt-4">
+            {/* Nome Responsável */}
+            <div>
+              <label className="text-sm text-gray-400 block mb-2">
+                Nome do Responsável *
+              </label>
+              <input
+                type="text"
+                value={editFormData.nome_responsavel}
+                onChange={(e) => setEditFormData({...editFormData, nome_responsavel: e.target.value})}
+                className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                placeholder="Nome completo"
+              />
+            </div>
+
+            {/* Nome Empresa */}
+            <div>
+              <label className="text-sm text-gray-400 block mb-2">
+                Nome da Empresa *
+              </label>
+              <input
+                type="text"
+                value={editFormData.nome_empresa}
+                onChange={(e) => setEditFormData({...editFormData, nome_empresa: e.target.value})}
+                className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                placeholder="Nome da empresa"
+              />
+            </div>
+
+            {/* Grid 2 colunas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Segmento */}
+              <div>
+                <label className="text-sm text-gray-400 block mb-2">
+                  Segmento
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.segmento_produto_servico}
+                  onChange={(e) => setEditFormData({...editFormData, segmento_produto_servico: e.target.value})}
+                  className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                  placeholder="Ex: Tecnologia, Saúde..."
+                />
+              </div>
+
+              {/* CPF/CNPJ */}
+              <div>
+                <label className="text-sm text-gray-400 block mb-2">
+                  CPF/CNPJ
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.cpf_cnpj}
+                  onChange={(e) => setEditFormData({...editFormData, cpf_cnpj: e.target.value})}
+                  className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                  placeholder="000.000.000-00"
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="text-sm text-gray-400 block mb-2">
+                Email *
+              </label>
+              <input
+                type="email"
+                value={editFormData.email_principal}
+                onChange={(e) => setEditFormData({...editFormData, email_principal: e.target.value})}
+                className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                placeholder="email@empresa.com"
+              />
+            </div>
+
+            {/* Grid 2 colunas - Telefones */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* WhatsApp */}
+              <div>
+                <label className="text-sm text-gray-400 block mb-2">
+                  WhatsApp *
+                </label>
+                <input
+                  type="tel"
+                  value={editFormData.fone_whatsapp}
+                  onChange={(e) => setEditFormData({...editFormData, fone_whatsapp: e.target.value})}
+                  className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                  placeholder="(00) 00000-0000"
+                />
+              </div>
+
+              {/* Telefone Contato */}
+              <div>
+                <label className="text-sm text-gray-400 block mb-2">
+                  Telefone Contato
+                </label>
+                <input
+                  type="tel"
+                  value={editFormData.telefone_contato}
+                  onChange={(e) => setEditFormData({...editFormData, telefone_contato: e.target.value})}
+                  className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                  placeholder="(00) 0000-0000"
+                />
+              </div>
+            </div>
+
+            {/* Grid 2 colunas - Valor e Modelo */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Valor */}
+              <div>
+                <label className="text-sm text-gray-400 block mb-2">
+                  Valor Acordado
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editFormData.valor_acordado}
+                  onChange={(e) => setEditFormData({...editFormData, valor_acordado: e.target.value})}
+                  className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                  placeholder="0.00"
+                />
+              </div>
+
+              {/* Modelo */}
+              <div>
+                <label className="text-sm text-gray-400 block mb-2">
+                  Modelo de Contratação
+                </label>
+                <select
+                  value={editFormData.modelo_contratacao}
+                  onChange={(e) => setEditFormData({...editFormData, modelo_contratacao: e.target.value})}
+                  className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                >
+                  <option value="monthly">Mensal</option>
+                  <option value="single">Único</option>
+                  <option value="unique">Único</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Status */}
+            <div>
+              <label className="text-sm text-gray-400 block mb-2">
+                Status
+              </label>
+              <select
+                value={editFormData.status}
+                onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
+                className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+              >
+                <option value="novo">Novo</option>
+                <option value="em_analise">Em Análise</option>
+                <option value="em_configuracao">Em Configuração</option>
+                <option value="lancamento">Lançamento</option>
+                <option value="ativo">Concluído</option>
+              </select>
+            </div>
+
+            {/* Endereço */}
+            <div>
+              <label className="text-sm text-gray-400 block mb-2">
+                Endereço da Empresa
+              </label>
+              <input
+                type="text"
+                value={editFormData.endereco_empresa}
+                onChange={(e) => setEditFormData({...editFormData, endereco_empresa: e.target.value})}
+                className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                placeholder="Rua, número, cidade..."
+              />
+            </div>
+
+            {/* Grid 2 colunas - Redes */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Instagram */}
+              <div>
+                <label className="text-sm text-gray-400 block mb-2">
+                  Instagram
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.instagram_empresa}
+                  onChange={(e) => setEditFormData({...editFormData, instagram_empresa: e.target.value})}
+                  className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                  placeholder="@empresa"
+                />
+              </div>
+
+              {/* Site */}
+              <div>
+                <label className="text-sm text-gray-400 block mb-2">
+                  Site
+                </label>
+                <input
+                  type="url"
+                  value={editFormData.site_empresa}
+                  onChange={(e) => setEditFormData({...editFormData, site_empresa: e.target.value})}
+                  className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
+                  placeholder="https://www.empresa.com"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Footer com botões */}
+          <div className="flex gap-3 mt-6 pt-4 border-t border-white/10">
+            <Button
+              onClick={() => setEditingCadastro(null)}
+              variant="outline"
+              className="flex-1 border-white/20 text-white hover:bg-white/10"
+              disabled={isSaving}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSaveEdit}
+              className="flex-1 bg-[#00FF94] hover:bg-[#00FF94]/90 text-black font-semibold"
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Salvar Alterações
+                </>
+              )}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
