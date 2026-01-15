@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Zap, Lock, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -120,6 +120,17 @@ export default function Login() {
               )}
             </Button>
           </form>
+
+          {/* Link para registro */}
+          <p className="text-center text-gray-400 text-sm mt-6">
+            Não tem uma conta?{' '}
+            <Link 
+              to="/register" 
+              className="text-[#00FF94] hover:underline"
+            >
+              Criar conta
+            </Link>
+          </p>
         </div>
 
         {/* Footer */}
