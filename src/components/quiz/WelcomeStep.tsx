@@ -9,7 +9,7 @@ interface WelcomeStepProps {
 
 export function WelcomeStep({ onNext }: WelcomeStepProps) {
   const [displayedText, setDisplayedText] = useState('');
-  const fullText = 'Bem-vindo à CompanyChat IA! 🎉';
+  const fullText = 'Bem-vindo(a) 🎉';
 
   useEffect(() => {
     let index = 0;
