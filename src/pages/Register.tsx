@@ -8,43 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-// Domínios de email corporativos permitidos (adicione os domínios da sua empresa)
-const ALLOWED_DOMAINS = [
-  'companychat.com.br',
-  'companychat.com',
-  'companychatautomacoeseia.com',
-  // Adicione mais domínios corporativos aqui
-];
-
-// Domínios de email pessoais bloqueados
-const BLOCKED_DOMAINS = [
-  'gmail.com',
-  'hotmail.com',
-  'outlook.com',
-  'yahoo.com',
-  'yahoo.com.br',
-  'live.com',
-  'icloud.com',
-  'protonmail.com',
-  'uol.com.br',
-  'bol.com.br',
-  'terra.com.br',
-];
-
-function validateCorporateEmail(email: string): { valid: boolean; message: string } {
-  const domain = email.split('@')[1]?.toLowerCase();
+function validateEmail(email: string): { valid: boolean; message: string } {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   
-  if (!domain) {
+  if (!emailRegex.test(email)) {
     return { valid: false, message: 'Email inválido' };
-  }
-
-  if (BLOCKED_DOMAINS.includes(domain)) {
-    return { valid: false, message: 'Use um email corporativo. Emails pessoais não são permitidos.' };
-  }
-
-  // Se há domínios específicos configurados, verificar
-  if (ALLOWED_DOMAINS.length > 0 && !ALLOWED_DOMAINS.includes(domain)) {
-    return { valid: false, message: `Apenas emails dos domínios autorizados são permitidos.` };
   }
 
   return { valid: true, message: '' };
@@ -68,7 +36,7 @@ export default function Register() {
 
   useEffect(() => {
     if (email) {
-      const validation = validateCorporateEmail(email);
+      const validation = validateEmail(email);
       setEmailError(validation.valid ? '' : validation.message);
     } else {
       setEmailError('');
@@ -79,7 +47,7 @@ export default function Register() {
     e.preventDefault();
     
     // Validações
-    const emailValidation = validateCorporateEmail(email);
+    const emailValidation = validateEmail(email);
     if (!emailValidation.valid) {
       toast.error(emailValidation.message);
       return;
@@ -164,13 +132,13 @@ export default function Register() {
             <div className="space-y-2">
               <Label className="text-gray-300 flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                Email Corporativo
+                Email
               </Label>
               <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu@empresa.com.br"
+                placeholder="seu@email.com"
                 className={`bg-black border-white/10 text-white placeholder:text-gray-600 focus:border-[#00FF94]/50 ${
                   emailError ? 'border-red-500/50' : ''
                 }`}
@@ -182,9 +150,6 @@ export default function Register() {
                   {emailError}
                 </p>
               )}
-              <p className="text-gray-500 text-xs">
-                Apenas emails corporativos autorizados são aceitos
-              </p>
             </div>
             
             {/* Senha */}
