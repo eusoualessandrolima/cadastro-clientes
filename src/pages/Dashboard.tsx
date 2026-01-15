@@ -19,7 +19,11 @@ import {
   Mail,
   Plus,
   Edit,
-  Save
+  Save,
+  Link as LinkIcon,
+  Download,
+  Settings,
+  LayoutDashboard
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useRequireAuth, useAuth } from '@/hooks/useAuth';
@@ -49,7 +53,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 interface Cadastro {
   id: string;
@@ -114,6 +118,7 @@ export default function Dashboard() {
   const { loading } = useRequireAuth();
   const { signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [cadastros, setCadastros] = useState<Cadastro[]>([]);
   const [stats, setStats] = useState<Stats>({
     total: 0,
@@ -318,6 +323,14 @@ export default function Dashboard() {
     navigate('/login');
   }
 
+  function copiarLinkFormulario() {
+    const linkFormulario = `${window.location.origin}/`;
+    navigator.clipboard.writeText(linkFormulario);
+    toast.success('Link copiado!', {
+      description: 'Cole e compartilhe com seus clientes',
+    });
+  }
+
   if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -328,36 +341,78 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-64 min-h-screen bg-[#0a0a0a] border-r border-white/10 p-4 flex flex-col fixed left-0 top-0">
+          <div className="flex items-center gap-3 mb-8 px-2">
             <div className="w-10 h-10 bg-gradient-to-br from-[#00FF94] to-[#00CC75] rounded-xl flex items-center justify-center">
               <Zap className="w-5 h-5 text-black" />
             </div>
+            <span className="font-bold text-lg">Cadastros</span>
+          </div>
+
+          <nav className="flex flex-col gap-2 flex-1">
+            <Link
+              to="/dashboard"
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                location.pathname === '/dashboard'
+                  ? 'bg-[#00FF94]/10 text-[#00FF94] border border-[#00FF94]/20'
+                  : 'text-gray-400 hover:bg-white/5'
+              }`}
+            >
+              <LayoutDashboard className="w-5 h-5" />
+              <span className="font-medium">Dashboard</span>
+            </Link>
+
+            <Link
+              to="/configuracoes-cadastros"
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                location.pathname === '/configuracoes-cadastros'
+                  ? 'bg-[#00FF94]/10 text-[#00FF94] border border-[#00FF94]/20'
+                  : 'text-gray-400 hover:bg-white/5'
+              }`}
+            >
+              <Settings className="w-5 h-5" />
+              <span className="font-medium">Configurações</span>
+            </Link>
+          </nav>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors mt-auto"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium">Sair</span>
+          </button>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 ml-64 p-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-2xl font-bold">Dashboard de Cadastros</h1>
               <p className="text-gray-400 text-sm">Visão geral dos clientes cadastrados</p>
             </div>
+            <div className="flex gap-3">
+              <Button
+                onClick={copiarLinkFormulario}
+                variant="outline"
+                className="border-[#00FF94]/40 text-[#00FF94] hover:bg-[#00FF94]/20 bg-[#00FF94]/10"
+              >
+                <LinkIcon className="w-4 h-4 mr-2" />
+                Copiar Link do Formulário
+              </Button>
+              <Button
+                onClick={fetchData}
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/10 bg-white/5"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Atualizar
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-3">
-            <Button
-              onClick={fetchData}
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10 bg-white/5"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Atualizar
-            </Button>
-            <Button
-              onClick={handleLogout}
-              className="bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-400 hover:text-red-300"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sair
-            </Button>
-          </div>
-        </div>
 
         {/* Cards de Métricas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -599,6 +654,7 @@ export default function Dashboard() {
             </Table>
           )}
         </div>
+        </main>
       </div>
 
       {/* Modal de Detalhes */}
