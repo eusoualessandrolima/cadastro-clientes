@@ -70,6 +70,9 @@ interface CadastroInsert {
 }
 
 export async function salvarCadastroNoSupabase(formData: FormData): Promise<{ id: string }> {
+  console.log('💾 [salvarCadastroNoSupabase] Iniciando...');
+  console.log('📋 FormData recebido:', formData);
+
   const cadastro: CadastroInsert = {
     nome_responsavel: formData.responsibleName,
     nome_empresa: formData.companyName,
@@ -103,6 +106,9 @@ export async function salvarCadastroNoSupabase(formData: FormData): Promise<{ id
     origem: 'formulario_cadastro',
   };
 
+  console.log('📦 Objeto cadastro preparado:', cadastro);
+  console.log('🔄 Tentando INSERT no Supabase...');
+
   const { data, error } = await supabase
     .from('cadastros_clientes')
     .insert([cadastro])
@@ -110,10 +116,16 @@ export async function salvarCadastroNoSupabase(formData: FormData): Promise<{ id
     .single();
 
   if (error) {
-    console.error('Erro ao salvar no banco:', error);
+    console.error('❌ ERRO DO SUPABASE:');
+    console.error('  Código:', error.code);
+    console.error('  Mensagem:', error.message);
+    console.error('  Detalhes:', error.details);
+    console.error('  Hint:', error.hint);
+    console.error('  Erro completo:', JSON.stringify(error, null, 2));
     throw error;
   }
 
+  console.log('✅ Cadastro salvo com sucesso! ID:', data.id);
   return { id: data.id };
 }
 
@@ -210,11 +222,46 @@ export async function enviarParaWebhookN8n(formData: FormData, cadastroId?: stri
 }
 
 export async function finalizarCadastro(formData: FormData): Promise<{ success: boolean }> {
+  console.log('🚀 [finalizarCadastro] INICIANDO CADASTRO...');
+  console.log('📋 Dados do formulário recebidos:', formData);
+
+  // Validação básica
+  if (!formData.responsibleName || !formData.companyName || !formData.email || !formData.phone) {
+    console.error('❌ Campos obrigatórios faltando!');
+    console.error('  responsibleName:', formData.responsibleName);
+    console.error('  companyName:', formData.companyName);
+    console.error('  email:', formData.email);
+    console.error('  phone:', formData.phone);
+    throw new Error('Campos obrigatórios não preenchidos');
+  }
+
+  console.log('✅ Validação inicial OK');
+
   // 1. Salvar no banco
-  const { id } = await salvarCadastroNoSupabase(formData);
+  console.log('💾 Etapa 1: Salvando no banco de dados...');
+  let cadastroId: string;
   
-  // 2. Enviar para n8n
-  await enviarParaWebhookN8n(formData, id);
+  try {
+    const result = await salvarCadastroNoSupabase(formData);
+    cadastroId = result.id;
+    console.log('✅ Etapa 1 concluída! ID do cadastro:', cadastroId);
+  } catch (dbError) {
+    console.error('❌ Etapa 1 FALHOU - Erro ao salvar no banco:');
+    console.error('  Tipo:', (dbError as Error).name);
+    console.error('  Mensagem:', (dbError as Error).message);
+    throw dbError;
+  }
   
+  // 2. Enviar para n8n (não quebra o fluxo se falhar)
+  console.log('📡 Etapa 2: Enviando para webhook n8n...');
+  try {
+    await enviarParaWebhookN8n(formData, cadastroId);
+    console.log('✅ Etapa 2 concluída! Webhook enviado.');
+  } catch (webhookError) {
+    console.warn('⚠️ Etapa 2 falhou (webhook), mas cadastro foi salvo:', webhookError);
+    // Não re-lançar o erro - o cadastro já foi salvo
+  }
+  
+  console.log('🎉 CADASTRO FINALIZADO COM SUCESSO!');
   return { success: true };
 }
