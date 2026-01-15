@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LoadingScreen } from './LoadingScreen';
 import { WelcomeStep } from './WelcomeStep';
 import { CompanyStep } from './CompanyStep';
 import { PersonalizationStep } from './PersonalizationStep';
@@ -15,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 const STORAGE_KEY = 'companychat_onboarding';
 
 export function Quiz() {
-  const [step, setStep] = useState<QuizStep>('loading');
+  const [step, setStep] = useState<QuizStep>('welcome');
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -82,7 +81,7 @@ export function Quiz() {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
       >
-        {step === 'loading' && <LoadingScreen onComplete={() => setStep('welcome')} />}
+        {step === 'welcome' && <WelcomeStep onNext={() => setStep('company')} />}
         {step === 'welcome' && <WelcomeStep onNext={() => setStep('company')} />}
         {step === 'company' && <CompanyStep formData={formData} updateFormData={updateFormData} onNext={() => setStep('personalization')} />}
         {step === 'personalization' && <PersonalizationStep formData={formData} updateFormData={updateFormData} onNext={() => setStep('integration')} />}
