@@ -1,7 +1,7 @@
 import { Quiz } from '@/components/quiz/Quiz';
 
-const Index = () => {
+const Welcome = () => {
   return <Quiz />;
 };
 
-export default Index;
+export default Welcome;
