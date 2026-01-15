@@ -1,4 +1,4 @@
-'\\wsl.localhost\Ubuntu-24.04\home\alessandro\cadastro-clientes'
-CMD.EXE foi iniciado tendo o caminho acima como pasta atual.
-NÆo h  suporte para caminhos UNC. Padronizando para pasta do Windows.
-2026/01/15 17:13:30 Access token not provided. Supply an access token by running supabase login or setting the SUPABASE_ACCESS_TOKEN environment variable.
+// Este arquivo Ã© reservado para tipos gerados automaticamente do Supabase
+// Use src/integrations/supabase/types.ts para tipos do banco de dados
+
+export {};

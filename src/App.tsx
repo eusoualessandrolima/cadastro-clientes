@@ -21,15 +21,15 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Rota raiz - redireciona baseado em autenticação */}
+          {/* Rota raiz - mostra LOGIN se não autenticado, redireciona para dashboard se autenticado */}
           <Route path="/" element={<Home />} />
 
-          {/* Rotas públicas */}
+          {/* Rota pública de boas-vindas - landing page para clientes */}
+          <Route path="/welcome" element={<Welcome />} />
+
+          {/* Rotas administrativas públicas */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-
-          {/* Rota de boas-vindas (pode ser protegida ou não) */}
-          <Route path="/welcome" element={<Welcome />} />
 
           {/* Rotas protegidas - requerem autenticação */}
           <Route
