@@ -3,10 +3,10 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useRequireAuth, useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { 
-  Settings, 
-  Webhook, 
-  MessageSquare, 
+import {
+  Settings,
+  Webhook,
+  MessageSquare,
   Bell,
   Save,
   Zap,
@@ -65,7 +65,7 @@ export default function ConfiguracoesCadastros() {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const [config, setConfig] = useState<ConfigData>(defaultConfig);
   const [salvando, setSalvando] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -87,9 +87,9 @@ export default function ConfiguracoesCadastros() {
         .select('configuracoes')
         .eq('user_id', userData.user.id)
         .maybeSingle();
-      
+
       if (error) throw error;
-      
+
       if (data?.configuracoes) {
         setConfig({ ...defaultConfig, ...(data.configuracoes as unknown as ConfigData) });
       }
@@ -151,13 +151,13 @@ export default function ConfiguracoesCadastros() {
       toast.error('Insira uma URL de webhook de teste');
       return;
     }
-    
+
     const toastId = 'webhook-test';
     toast.loading('Testando conexão...', { id: toastId });
-    
+
     console.log('🔄 Iniciando teste de webhook...');
     console.log('📍 URL (TESTE):', config.webhook_url_test);
-    
+
     try {
       const dadosTeste = {
         evento: 'teste_conexao',
@@ -167,9 +167,9 @@ export default function ConfiguracoesCadastros() {
           sistema: 'Cadastros - CompanyChat IA'
         }
       };
-      
+
       console.log('📤 Enviando dados:', dadosTeste);
-      
+
       const response = await fetch(config.webhook_url_test, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -179,22 +179,22 @@ export default function ConfiguracoesCadastros() {
       if (response.ok) {
         const responseText = await response.text();
         console.log('✅ Webhook TESTE respondeu com sucesso:', responseText);
-        toast.success('Webhook de teste funcionando!', { 
+        toast.success('Webhook de teste funcionando!', {
           id: toastId,
           description: 'Conexão estabelecida com sucesso'
         });
       } else {
         console.error('❌ Webhook TESTE retornou erro:', response.status, response.statusText);
-        toast.error('Erro ao testar webhook', { 
+        toast.error('Erro ao testar webhook', {
           id: toastId,
           description: `Status ${response.status}: ${response.statusText}`
         });
       }
     } catch (error: any) {
       console.error('❌ Erro de conexão com webhook TESTE:', error);
-      toast.error('Erro de conexão com webhook', { 
+      toast.error('Erro de conexão com webhook', {
         id: toastId,
-        description: error.message 
+        description: error.message
       });
     }
   }
@@ -204,7 +204,7 @@ export default function ConfiguracoesCadastros() {
       toast.error('Preencha URL e API Key da Evolution');
       return;
     }
-    
+
     try {
       const response = await fetch(`${config.evolution_url}/instance/connectionState/${config.evolution_instance}`, {
         headers: {
@@ -228,7 +228,7 @@ export default function ConfiguracoesCadastros() {
   }
 
   function copiarLinkFormulario() {
-    const linkFormulario = `${window.location.origin}/`;
+    const linkFormulario = `${window.location.origin}/welcome`;
     navigator.clipboard.writeText(linkFormulario);
     toast.success('Link copiado!', {
       description: 'Cole e compartilhe com seus clientes',
@@ -258,11 +258,10 @@ export default function ConfiguracoesCadastros() {
           <nav className="flex flex-col gap-2 flex-1">
             <Link
               to="/dashboard"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                location.pathname === '/dashboard'
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === '/dashboard'
                   ? 'bg-[#00FF94]/10 text-[#00FF94] border border-[#00FF94]/20'
                   : 'text-gray-400 hover:bg-white/5'
-              }`}
+                }`}
             >
               <LayoutDashboard className="w-5 h-5" />
               <span className="font-medium">Dashboard</span>
@@ -270,11 +269,10 @@ export default function ConfiguracoesCadastros() {
 
             <Link
               to="/configuracoes-cadastros"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                location.pathname === '/configuracoes-cadastros'
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === '/configuracoes-cadastros'
                   ? 'bg-[#00FF94]/10 text-[#00FF94] border border-[#00FF94]/20'
                   : 'text-gray-400 hover:bg-white/5'
-              }`}
+                }`}
             >
               <Settings className="w-5 h-5" />
               <span className="font-medium">Configurações</span>
@@ -321,10 +319,10 @@ export default function ConfiguracoesCadastros() {
                 <div className="bg-black/50 rounded-lg p-4 border border-[#00FF94]/10">
                   <p className="text-sm text-gray-400 mb-2">URL pública do formulário:</p>
                   <p className="text-[#00FF94] font-mono text-sm break-all">
-                    {typeof window !== 'undefined' ? `${window.location.origin}/` : 'https://seudominio.com/'}
+                    {typeof window !== 'undefined' ? `${window.location.origin}/welcome` : 'https://seudominio.com/welcome'}
                   </p>
                 </div>
-                
+
                 {/* Botão copiar */}
                 <Button
                   onClick={copiarLinkFormulario}
@@ -333,17 +331,17 @@ export default function ConfiguracoesCadastros() {
                   <Copy className="w-5 h-5 mr-2" />
                   Copiar Link do Formulário
                 </Button>
-                
+
                 {/* Instruções */}
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                   <p className="text-sm text-blue-200">
-                    💡 <strong>Como usar:</strong> Copie este link e compartilhe com seus clientes por WhatsApp, 
+                    💡 <strong>Como usar:</strong> Copie este link e compartilhe com seus clientes por WhatsApp,
                     email ou redes sociais. Cada cliente que abrir o link verá um formulário limpo.
                   </p>
                 </div>
               </div>
             </div>
-            
+
             {/* n8n Webhook */}
             <div className="bg-white/5 border border-white/10 rounded-xl p-6">
               <div className="flex items-center gap-4 mb-6">
@@ -363,7 +361,7 @@ export default function ConfiguracoesCadastros() {
                   <Input
                     type="url"
                     value={config.webhook_url_test}
-                    onChange={(e) => setConfig({...config, webhook_url_test: e.target.value})}
+                    onChange={(e) => setConfig({ ...config, webhook_url_test: e.target.value })}
                     placeholder="https://webhook.seudominio.com/webhook-test/..."
                     className="bg-black border-white/10 text-white focus:border-purple-500/50"
                   />
@@ -377,7 +375,7 @@ export default function ConfiguracoesCadastros() {
                   <Input
                     type="url"
                     value={config.webhook_url_prod}
-                    onChange={(e) => setConfig({...config, webhook_url_prod: e.target.value})}
+                    onChange={(e) => setConfig({ ...config, webhook_url_prod: e.target.value })}
                     placeholder="https://workflow.seudominio.com/webhook/..."
                     className="bg-black border-white/10 text-white focus:border-purple-500/50"
                   />
@@ -444,7 +442,7 @@ export default function ConfiguracoesCadastros() {
                   <Input
                     type="url"
                     value={config.evolution_url}
-                    onChange={(e) => setConfig({...config, evolution_url: e.target.value})}
+                    onChange={(e) => setConfig({ ...config, evolution_url: e.target.value })}
                     placeholder="https://evolution.seudominio.com"
                     className="bg-black border-white/10 text-white focus:border-green-500/50"
                   />
@@ -455,7 +453,7 @@ export default function ConfiguracoesCadastros() {
                   <Input
                     type="password"
                     value={config.evolution_api_key}
-                    onChange={(e) => setConfig({...config, evolution_api_key: e.target.value})}
+                    onChange={(e) => setConfig({ ...config, evolution_api_key: e.target.value })}
                     placeholder="••••••••••••"
                     className="bg-black border-white/10 text-white focus:border-green-500/50"
                   />
@@ -466,7 +464,7 @@ export default function ConfiguracoesCadastros() {
                   <Input
                     type="text"
                     value={config.evolution_instance}
-                    onChange={(e) => setConfig({...config, evolution_instance: e.target.value})}
+                    onChange={(e) => setConfig({ ...config, evolution_instance: e.target.value })}
                     placeholder="default"
                     className="bg-black border-white/10 text-white focus:border-green-500/50"
                   />
@@ -505,7 +503,7 @@ export default function ConfiguracoesCadastros() {
                     <span className="text-gray-300">{label}</span>
                     <Switch
                       checked={config[key as keyof ConfigData] as boolean}
-                      onCheckedChange={(checked) => setConfig({...config, [key]: checked})}
+                      onCheckedChange={(checked) => setConfig({ ...config, [key]: checked })}
                     />
                   </div>
                 ))}

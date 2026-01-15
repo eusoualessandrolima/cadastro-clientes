@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import Login from './Login';
+import Welcome from './Welcome';
 
 /**
  * Componente para a rota raiz "/"
  * 
  * Lógica:
- * - Se usuário NÃO está logado → mostra tela de LOGIN
+ * - Se usuário NÃO está logado → mostra o FORMULÁRIO (Welcome)
  * - Se usuário ESTÁ logado → redireciona para /dashboard
  */
 export default function Home() {
@@ -26,6 +26,6 @@ export default function Home() {
         return null;
     }
 
-    // Se não está autenticado, mostra a tela de login
-    return <Login />;
+    // Se não está autenticado, mostra o formulário de boas-vindas/cadastro
+    return <Welcome />;
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Users, 
+import {
+  Users,
   Clock,
   CheckCircle2,
   AlertCircle,
@@ -127,7 +127,7 @@ export default function Dashboard() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCadastro, setSelectedCadastro] = useState<Cadastro | null>(null);
-  
+
   // Estado do modal de edição
   const [editingCadastro, setEditingCadastro] = useState<Cadastro | null>(null);
   const [editFormData, setEditFormData] = useState<EditFormData>({
@@ -148,7 +148,7 @@ export default function Dashboard() {
     site_empresa: '',
   });
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -158,18 +158,18 @@ export default function Dashboard() {
   const filteredCadastros = useMemo(() => {
     return cadastros.filter((cadastro) => {
       const searchLower = searchTerm.toLowerCase();
-      const matchesSearch = searchTerm === '' || 
+      const matchesSearch = searchTerm === '' ||
         cadastro.nome_empresa.toLowerCase().includes(searchLower) ||
         cadastro.nome_responsavel.toLowerCase().includes(searchLower) ||
         cadastro.email_principal.toLowerCase().includes(searchLower) ||
         cadastro.fone_whatsapp.includes(searchTerm);
-      
+
       const matchesStatus = statusFilter === 'all' || cadastro.status === statusFilter;
-      
-      const matchesWebhook = webhookFilter === 'all' || 
+
+      const matchesWebhook = webhookFilter === 'all' ||
         (webhookFilter === 'sent' && cadastro.webhook_enviado) ||
         (webhookFilter === 'pending' && !cadastro.webhook_enviado);
-      
+
       return matchesSearch && matchesStatus && matchesWebhook;
     });
   }, [cadastros, searchTerm, statusFilter, webhookFilter]);
@@ -237,7 +237,7 @@ export default function Dashboard() {
         .eq('id', id);
 
       if (error) throw error;
-      
+
       const statusInfo = getStatusInfo(newStatus);
       toast.success(`Status alterado para "${statusInfo.label}"`, {
         icon: statusInfo.icone
@@ -250,7 +250,7 @@ export default function Dashboard() {
 
   async function handleDelete(id: string) {
     if (!confirm('Tem certeza que deseja excluir este cadastro?')) return;
-    
+
     try {
       const { error } = await supabase
         .from('cadastros_clientes')
@@ -258,7 +258,7 @@ export default function Dashboard() {
         .eq('id', id);
 
       if (error) throw error;
-      
+
       toast.success('Cadastro excluído!');
       fetchData();
     } catch (error: any) {
@@ -289,7 +289,7 @@ export default function Dashboard() {
 
   async function handleSaveEdit() {
     if (!editingCadastro) return;
-    
+
     setIsSaving(true);
     try {
       const updateData = {
@@ -359,11 +359,10 @@ export default function Dashboard() {
           <nav className="flex flex-col gap-2 flex-1">
             <Link
               to="/dashboard"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                location.pathname === '/dashboard'
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === '/dashboard'
                   ? 'bg-[#00FF94]/10 text-[#00FF94] border border-[#00FF94]/20'
                   : 'text-gray-400 hover:bg-white/5'
-              }`}
+                }`}
             >
               <LayoutDashboard className="w-5 h-5" />
               <span className="font-medium">Dashboard</span>
@@ -371,11 +370,10 @@ export default function Dashboard() {
 
             <Link
               to="/configuracoes-cadastros"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                location.pathname === '/configuracoes-cadastros'
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === '/configuracoes-cadastros'
                   ? 'bg-[#00FF94]/10 text-[#00FF94] border border-[#00FF94]/20'
                   : 'text-gray-400 hover:bg-white/5'
-              }`}
+                }`}
             >
               <Settings className="w-5 h-5" />
               <span className="font-medium">Configurações</span>
@@ -411,255 +409,255 @@ export default function Dashboard() {
             </div>
           </div>
 
-        {/* Cards de Métricas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <MetricCard
-            icon={Users}
-            label="Total de Cadastros"
-            value={stats.total}
-            color="text-white"
-            subtitle="+0 últimos 7 dias"
-          />
-          <MetricCard
-            icon={FileText}
-            label="Novos"
-            value={stats.novos}
-            color="text-blue-400"
-            subtitle="Aguardando análise"
-          />
-          <MetricCard
-            icon={MessageSquare}
-            label="Em Negociação"
-            value={stats.emNegociacao}
-            color="text-yellow-400"
-            subtitle="Em contato"
-          />
-          <MetricCard
-            icon={CheckCircle2}
-            label="Ativos"
-            value={stats.ativos}
-            color="text-[#00FF94]"
-            subtitle="Implementados"
-          />
-        </div>
-
-        {/* Filtros e Busca */}
-        <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Buscar por empresa, responsável, email ou telefone..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-black/50 border-white/10 text-white placeholder:text-gray-500 focus:border-[#00FF94]/50"
-              />
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-400" />
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[200px] bg-[#1a1a1a] border-white/20 text-white">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-white/20 z-50">
-                  <SelectItem value="all" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Todos os status</SelectItem>
-                  {getAllStatuses().map((status) => (
-                    <SelectItem key={status.valor} value={status.valor} className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">
-                      <span className="inline-flex items-center gap-2">
-                        <span>{status.icone}</span>
-                        <span>{status.label}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Select value={webhookFilter} onValueChange={setWebhookFilter}>
-              <SelectTrigger className="w-[160px] bg-[#1a1a1a] border-white/20 text-white">
-                <SelectValue placeholder="Webhook" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#1a1a1a] border-white/20 z-50">
-                <SelectItem value="all" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Todos</SelectItem>
-                <SelectItem value="sent" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Enviados</SelectItem>
-                <SelectItem value="pending" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Pendentes</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                onClick={clearFilters}
-                className="text-gray-400 hover:text-white hover:bg-white/10"
-              >
-                <X className="w-4 h-4 mr-2" />
-                Limpar
-              </Button>
-            )}
+          {/* Cards de Métricas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <MetricCard
+              icon={Users}
+              label="Total de Cadastros"
+              value={stats.total}
+              color="text-white"
+              subtitle="+0 últimos 7 dias"
+            />
+            <MetricCard
+              icon={FileText}
+              label="Novos"
+              value={stats.novos}
+              color="text-blue-400"
+              subtitle="Aguardando análise"
+            />
+            <MetricCard
+              icon={MessageSquare}
+              label="Em Negociação"
+              value={stats.emNegociacao}
+              color="text-yellow-400"
+              subtitle="Em contato"
+            />
+            <MetricCard
+              icon={CheckCircle2}
+              label="Ativos"
+              value={stats.ativos}
+              color="text-[#00FF94]"
+              subtitle="Implementados"
+            />
           </div>
 
-          {hasActiveFilters && (
-            <div className="mt-3 text-sm text-gray-400">
-              Mostrando {filteredCadastros.length} de {cadastros.length} cadastros
-            </div>
-          )}
-        </div>
-
-        {/* Lista de Cadastros */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-          {filteredCadastros.length === 0 ? (
-            <div className="text-center py-20">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 mb-6">
-                <Users className="w-10 h-10 text-gray-600" />
+          {/* Filtros e Busca */}
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Buscar por empresa, responsável, email ou telefone..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-black/50 border-white/10 text-white placeholder:text-gray-500 focus:border-[#00FF94]/50"
+                />
               </div>
-              <h3 className="text-xl font-semibold text-gray-400 mb-2">
-                {hasActiveFilters 
-                  ? 'Nenhum cadastro encontrado com os filtros aplicados'
-                  : 'Nenhum cadastro encontrado'
-                }
-              </h3>
-              <p className="text-gray-600 mb-6">
-                {hasActiveFilters 
-                  ? 'Tente ajustar os filtros de busca'
-                  : 'Os cadastros aparecerão aqui quando forem preenchidos'
-                }
-              </p>
-              {!hasActiveFilters && (
-                <button
-                  onClick={() => window.open('/', '_blank')}
-                  className="px-6 py-3 bg-[#00FF94] hover:bg-[#00FF94]/90 text-black font-semibold rounded-lg transition-all inline-flex items-center gap-2"
-                >
-                  <Plus className="w-5 h-5" />
-                  Abrir Formulário de Cadastro
-                </button>
-              )}
+
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-gray-400" />
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[200px] bg-[#1a1a1a] border-white/20 text-white">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1a1a1a] border-white/20 z-50">
+                    <SelectItem value="all" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Todos os status</SelectItem>
+                    {getAllStatuses().map((status) => (
+                      <SelectItem key={status.valor} value={status.valor} className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">
+                        <span className="inline-flex items-center gap-2">
+                          <span>{status.icone}</span>
+                          <span>{status.label}</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Select value={webhookFilter} onValueChange={setWebhookFilter}>
+                <SelectTrigger className="w-[160px] bg-[#1a1a1a] border-white/20 text-white">
+                  <SelectValue placeholder="Webhook" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1a1a1a] border-white/20 z-50">
+                  <SelectItem value="all" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Todos</SelectItem>
+                  <SelectItem value="sent" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Enviados</SelectItem>
+                  <SelectItem value="pending" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Pendentes</SelectItem>
+                </SelectContent>
+              </Select>
+
               {hasActiveFilters && (
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={clearFilters}
-                  className="border-white/20 text-white hover:bg-white/10"
+                  className="text-gray-400 hover:text-white hover:bg-white/10"
                 >
                   <X className="w-4 h-4 mr-2" />
-                  Limpar Filtros
+                  Limpar
                 </Button>
               )}
             </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="border-white/10 hover:bg-white/5">
-                  <TableHead className="text-gray-400">Empresa</TableHead>
-                  <TableHead className="text-gray-400">Responsável</TableHead>
-                  <TableHead className="text-gray-400">Contato</TableHead>
-                  <TableHead className="text-gray-400">Valor</TableHead>
-                  <TableHead className="text-gray-400">Status</TableHead>
-                  <TableHead className="text-gray-400">Webhook</TableHead>
-                  <TableHead className="text-gray-400 text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCadastros.map((cadastro) => (
-                  <TableRow key={cadastro.id} className="border-white/10 hover:bg-white/5 transition-colors">
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-[#00FF94]/10 flex items-center justify-center flex-shrink-0">
-                          <Building2 className="w-5 h-5 text-[#00FF94]" />
-                        </div>
-                        <div>
-                          <p className="text-white font-medium">{cadastro.nome_empresa}</p>
-                          <p className="text-xs text-gray-500">{cadastro.segmento_produto_servico || '-'}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-gray-300">{cadastro.nome_responsavel}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-400 flex items-center gap-2">
-                          <Phone className="w-3 h-3" />
-                          {cadastro.fone_whatsapp}
-                        </p>
-                        <p className="text-sm text-gray-400 flex items-center gap-2">
-                          <Mail className="w-3 h-3" />
-                          {cadastro.email_principal}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {cadastro.modelo_contratacao === 'monthly' ? (
-                        <div>
-                          <p className="text-orange-400 font-semibold text-sm">
-                            Setup: R$ {Number(cadastro.valor_setup || 0).toLocaleString('pt-BR')}
-                          </p>
-                          <p className="text-[#00FF94] font-semibold">
-                            R$ {Number(cadastro.valor_mensalidade || 0).toLocaleString('pt-BR')}/mês
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-[#00FF94] font-semibold">
-                          {cadastro.valor_unico 
-                            ? `R$ ${Number(cadastro.valor_unico).toLocaleString('pt-BR')}`
-                            : '-'
-                          }
-                        </p>
-                      )}
-                      <p className="text-xs text-gray-500">
-                        {cadastro.modelo_contratacao === 'monthly' ? 'Mensal' : cadastro.modelo_contratacao === 'unique' ? 'Único' : cadastro.modelo_contratacao === 'single' ? 'Único' : '-'}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={cadastro.status} />
-                    </TableCell>
-                    <TableCell>
-                      {cadastro.webhook_enviado ? (
-                        <span className="inline-flex items-center gap-1.5 text-xs text-green-400">
-                          <CheckCircle className="w-4 h-4" />
-                          Enviado
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
-                          <Clock className="w-4 h-4" />
-                          Pendente
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {/* Ver Detalhes */}
-                        <button
-                          onClick={() => setSelectedCadastro(cadastro)}
-                          className="p-2.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 rounded-lg transition-all group"
-                          title="Ver detalhes"
-                        >
-                          <Eye className="w-4 h-4 text-blue-400 group-hover:text-blue-300" />
-                        </button>
-                        
-                        {/* Editar */}
-                        <button
-                          onClick={() => openEditModal(cadastro)}
-                          className="p-2.5 bg-[#00FF94]/20 hover:bg-[#00FF94]/30 border border-[#00FF94]/40 rounded-lg transition-all group"
-                          title="Editar"
-                        >
-                          <Edit className="w-4 h-4 text-[#00FF94] group-hover:text-[#00FF94]/80" />
-                        </button>
-                        
-                        {/* Excluir */}
-                        <button
-                          onClick={() => handleDelete(cadastro.id)}
-                          className="p-2.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 rounded-lg transition-all group"
-                          title="Excluir"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-400 group-hover:text-red-300" />
-                        </button>
-                      </div>
-                    </TableCell>
+
+            {hasActiveFilters && (
+              <div className="mt-3 text-sm text-gray-400">
+                Mostrando {filteredCadastros.length} de {cadastros.length} cadastros
+              </div>
+            )}
+          </div>
+
+          {/* Lista de Cadastros */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+            {filteredCadastros.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 mb-6">
+                  <Users className="w-10 h-10 text-gray-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-400 mb-2">
+                  {hasActiveFilters
+                    ? 'Nenhum cadastro encontrado com os filtros aplicados'
+                    : 'Nenhum cadastro encontrado'
+                  }
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  {hasActiveFilters
+                    ? 'Tente ajustar os filtros de busca'
+                    : 'Os cadastros aparecerão aqui quando forem preenchidos'
+                  }
+                </p>
+                {!hasActiveFilters && (
+                  <button
+                    onClick={() => window.open('/welcome', '_blank')}
+                    className="px-6 py-3 bg-[#00FF94] hover:bg-[#00FF94]/90 text-black font-semibold rounded-lg transition-all inline-flex items-center gap-2"
+                  >
+                    <Plus className="w-5 h-5" />
+                    Abrir Formulário de Cadastro
+                  </button>
+                )}
+                {hasActiveFilters && (
+                  <Button
+                    variant="outline"
+                    onClick={clearFilters}
+                    className="border-white/20 text-white hover:bg-white/10"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Limpar Filtros
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableHead className="text-gray-400">Empresa</TableHead>
+                    <TableHead className="text-gray-400">Responsável</TableHead>
+                    <TableHead className="text-gray-400">Contato</TableHead>
+                    <TableHead className="text-gray-400">Valor</TableHead>
+                    <TableHead className="text-gray-400">Status</TableHead>
+                    <TableHead className="text-gray-400">Webhook</TableHead>
+                    <TableHead className="text-gray-400 text-right">Ações</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </div>
+                </TableHeader>
+                <TableBody>
+                  {filteredCadastros.map((cadastro) => (
+                    <TableRow key={cadastro.id} className="border-white/10 hover:bg-white/5 transition-colors">
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-[#00FF94]/10 flex items-center justify-center flex-shrink-0">
+                            <Building2 className="w-5 h-5 text-[#00FF94]" />
+                          </div>
+                          <div>
+                            <p className="text-white font-medium">{cadastro.nome_empresa}</p>
+                            <p className="text-xs text-gray-500">{cadastro.segmento_produto_servico || '-'}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-gray-300">{cadastro.nome_responsavel}</TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <p className="text-sm text-gray-400 flex items-center gap-2">
+                            <Phone className="w-3 h-3" />
+                            {cadastro.fone_whatsapp}
+                          </p>
+                          <p className="text-sm text-gray-400 flex items-center gap-2">
+                            <Mail className="w-3 h-3" />
+                            {cadastro.email_principal}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {cadastro.modelo_contratacao === 'monthly' ? (
+                          <div>
+                            <p className="text-orange-400 font-semibold text-sm">
+                              Setup: R$ {Number(cadastro.valor_setup || 0).toLocaleString('pt-BR')}
+                            </p>
+                            <p className="text-[#00FF94] font-semibold">
+                              R$ {Number(cadastro.valor_mensalidade || 0).toLocaleString('pt-BR')}/mês
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-[#00FF94] font-semibold">
+                            {cadastro.valor_unico
+                              ? `R$ ${Number(cadastro.valor_unico).toLocaleString('pt-BR')}`
+                              : '-'
+                            }
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-500">
+                          {cadastro.modelo_contratacao === 'monthly' ? 'Mensal' : cadastro.modelo_contratacao === 'unique' ? 'Único' : cadastro.modelo_contratacao === 'single' ? 'Único' : '-'}
+                        </p>
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={cadastro.status} />
+                      </TableCell>
+                      <TableCell>
+                        {cadastro.webhook_enviado ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs text-green-400">
+                            <CheckCircle className="w-4 h-4" />
+                            Enviado
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                            <Clock className="w-4 h-4" />
+                            Pendente
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          {/* Ver Detalhes */}
+                          <button
+                            onClick={() => setSelectedCadastro(cadastro)}
+                            className="p-2.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 rounded-lg transition-all group"
+                            title="Ver detalhes"
+                          >
+                            <Eye className="w-4 h-4 text-blue-400 group-hover:text-blue-300" />
+                          </button>
+
+                          {/* Editar */}
+                          <button
+                            onClick={() => openEditModal(cadastro)}
+                            className="p-2.5 bg-[#00FF94]/20 hover:bg-[#00FF94]/30 border border-[#00FF94]/40 rounded-lg transition-all group"
+                            title="Editar"
+                          >
+                            <Edit className="w-4 h-4 text-[#00FF94] group-hover:text-[#00FF94]/80" />
+                          </button>
+
+                          {/* Excluir */}
+                          <button
+                            onClick={() => handleDelete(cadastro.id)}
+                            className="p-2.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 rounded-lg transition-all group"
+                            title="Excluir"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-400 group-hover:text-red-300" />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
         </main>
       </div>
 
@@ -679,9 +677,9 @@ export default function Dashboard() {
                 <InfoItem label="Email" value={selectedCadastro.email_principal} />
                 <InfoItem label="WhatsApp" value={selectedCadastro.fone_whatsapp} />
                 <InfoItem label="Segmento" value={selectedCadastro.segmento_produto_servico || '-'} />
-                <InfoItem 
-                  label="Modelo" 
-                  value={selectedCadastro.modelo_contratacao === 'monthly' ? 'Mensal' : selectedCadastro.modelo_contratacao === 'single' ? 'Único' : selectedCadastro.modelo_contratacao || '-'} 
+                <InfoItem
+                  label="Modelo"
+                  value={selectedCadastro.modelo_contratacao === 'monthly' ? 'Mensal' : selectedCadastro.modelo_contratacao === 'single' ? 'Único' : selectedCadastro.modelo_contratacao || '-'}
                 />
               </div>
 
@@ -713,21 +711,20 @@ export default function Dashboard() {
                   <p className="text-xs text-gray-500 mt-1">Pagamento único</p>
                 </div>
               )}
-              
+
               <div>
                 <label className="text-sm text-gray-400 mb-3 block">Alterar Status</label>
                 <div className="flex flex-wrap gap-2">
                   {getAllStatuses().map((status) => {
                     const isActive = selectedCadastro.status === status.valor;
-                    
+
                     return (
                       <button
                         key={status.valor}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all border flex items-center gap-2 ${
-                          isActive 
-                            ? `${status.corBg} ${status.corBorda} ${status.corTexto} ring-2 ring-offset-2 ring-offset-zinc-900` 
+                        className={`px-4 py-2 rounded-lg font-medium transition-all border flex items-center gap-2 ${isActive
+                            ? `${status.corBg} ${status.corBorda} ${status.corTexto} ring-2 ring-offset-2 ring-offset-zinc-900`
                             : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
-                        }`}
+                          }`}
                         onClick={() => {
                           handleStatusChange(selectedCadastro.id, status.valor);
                           setSelectedCadastro({ ...selectedCadastro, status: status.valor });
@@ -758,7 +755,7 @@ export default function Dashboard() {
               Altere os dados do cadastro abaixo
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-5 mt-4">
             {/* Nome Responsável */}
             <div>
@@ -768,7 +765,7 @@ export default function Dashboard() {
               <input
                 type="text"
                 value={editFormData.nome_responsavel}
-                onChange={(e) => setEditFormData({...editFormData, nome_responsavel: e.target.value})}
+                onChange={(e) => setEditFormData({ ...editFormData, nome_responsavel: e.target.value })}
                 className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                 placeholder="Nome completo"
               />
@@ -782,7 +779,7 @@ export default function Dashboard() {
               <input
                 type="text"
                 value={editFormData.nome_empresa}
-                onChange={(e) => setEditFormData({...editFormData, nome_empresa: e.target.value})}
+                onChange={(e) => setEditFormData({ ...editFormData, nome_empresa: e.target.value })}
                 className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                 placeholder="Nome da empresa"
               />
@@ -798,7 +795,7 @@ export default function Dashboard() {
                 <input
                   type="text"
                   value={editFormData.segmento_produto_servico}
-                  onChange={(e) => setEditFormData({...editFormData, segmento_produto_servico: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, segmento_produto_servico: e.target.value })}
                   className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                   placeholder="Ex: Tecnologia, Saúde..."
                 />
@@ -812,7 +809,7 @@ export default function Dashboard() {
                 <input
                   type="text"
                   value={editFormData.cpf_cnpj}
-                  onChange={(e) => setEditFormData({...editFormData, cpf_cnpj: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, cpf_cnpj: e.target.value })}
                   className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                   placeholder="000.000.000-00"
                 />
@@ -827,7 +824,7 @@ export default function Dashboard() {
               <input
                 type="email"
                 value={editFormData.email_principal}
-                onChange={(e) => setEditFormData({...editFormData, email_principal: e.target.value})}
+                onChange={(e) => setEditFormData({ ...editFormData, email_principal: e.target.value })}
                 className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                 placeholder="email@empresa.com"
               />
@@ -843,7 +840,7 @@ export default function Dashboard() {
                 <input
                   type="tel"
                   value={editFormData.fone_whatsapp}
-                  onChange={(e) => setEditFormData({...editFormData, fone_whatsapp: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, fone_whatsapp: e.target.value })}
                   className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                   placeholder="(00) 00000-0000"
                 />
@@ -857,7 +854,7 @@ export default function Dashboard() {
                 <input
                   type="tel"
                   value={editFormData.telefone_contato}
-                  onChange={(e) => setEditFormData({...editFormData, telefone_contato: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, telefone_contato: e.target.value })}
                   className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                   placeholder="(00) 0000-0000"
                 />
@@ -871,7 +868,7 @@ export default function Dashboard() {
               </label>
               <select
                 value={editFormData.modelo_contratacao}
-                onChange={(e) => setEditFormData({...editFormData, modelo_contratacao: e.target.value})}
+                onChange={(e) => setEditFormData({ ...editFormData, modelo_contratacao: e.target.value })}
                 className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
               >
                 <option value="monthly">Mensal</option>
@@ -890,7 +887,7 @@ export default function Dashboard() {
                     type="number"
                     step="0.01"
                     value={editFormData.valor_setup}
-                    onChange={(e) => setEditFormData({...editFormData, valor_setup: e.target.value})}
+                    onChange={(e) => setEditFormData({ ...editFormData, valor_setup: e.target.value })}
                     className="w-full px-4 py-3 bg-black border border-orange-500/20 rounded-lg text-white focus:border-orange-500/50 focus:outline-none transition-colors"
                     placeholder="0.00"
                   />
@@ -903,7 +900,7 @@ export default function Dashboard() {
                     type="number"
                     step="0.01"
                     value={editFormData.valor_mensalidade}
-                    onChange={(e) => setEditFormData({...editFormData, valor_mensalidade: e.target.value})}
+                    onChange={(e) => setEditFormData({ ...editFormData, valor_mensalidade: e.target.value })}
                     className="w-full px-4 py-3 bg-black border border-[#00FF94]/20 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                     placeholder="0.00"
                   />
@@ -918,7 +915,7 @@ export default function Dashboard() {
                   type="number"
                   step="0.01"
                   value={editFormData.valor_unico}
-                  onChange={(e) => setEditFormData({...editFormData, valor_unico: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, valor_unico: e.target.value })}
                   className="w-full px-4 py-3 bg-black border border-[#00FF94]/20 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                   placeholder="0.00"
                 />
@@ -932,7 +929,7 @@ export default function Dashboard() {
               </label>
               <select
                 value={editFormData.status}
-                onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
+                onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
                 className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
               >
                 {getAllStatuses().map((status) => (
@@ -951,7 +948,7 @@ export default function Dashboard() {
               <input
                 type="text"
                 value={editFormData.endereco_empresa}
-                onChange={(e) => setEditFormData({...editFormData, endereco_empresa: e.target.value})}
+                onChange={(e) => setEditFormData({ ...editFormData, endereco_empresa: e.target.value })}
                 className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                 placeholder="Rua, número, cidade..."
               />
@@ -967,7 +964,7 @@ export default function Dashboard() {
                 <input
                   type="text"
                   value={editFormData.instagram_empresa}
-                  onChange={(e) => setEditFormData({...editFormData, instagram_empresa: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, instagram_empresa: e.target.value })}
                   className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                   placeholder="@empresa"
                 />
@@ -981,7 +978,7 @@ export default function Dashboard() {
                 <input
                   type="url"
                   value={editFormData.site_empresa}
-                  onChange={(e) => setEditFormData({...editFormData, site_empresa: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, site_empresa: e.target.value })}
                   className="w-full px-4 py-3 bg-black border border-white/10 rounded-lg text-white focus:border-[#00FF94]/50 focus:outline-none transition-colors"
                   placeholder="https://www.empresa.com"
                 />
