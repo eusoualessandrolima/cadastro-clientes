@@ -9,8 +9,7 @@ import { DigitalStep } from './DigitalStep';
 import { MaterialsStep } from './MaterialsStep';
 import { SuccessStep } from './SuccessStep';
 import { FormData, initialFormData, QuizStep } from '@/types/quiz';
-import { sendOnboardingData, OnboardingData } from '@/services/api';
-import { parseCurrency } from '@/utils/validation';
+import { finalizarCadastro } from '@/services/cadastroService';
 import { useToast } from '@/hooks/use-toast';
 
 const STORAGE_KEY = 'companychat_onboarding';
@@ -57,47 +56,9 @@ export function Quiz() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const payload: OnboardingData = {
-        company: {
-          responsibleName: formData.responsibleName,
-          companyName: formData.companyName,
-          segment: formData.segment,
-          cpfCnpj: formData.cpfCnpj,
-          email: formData.email,
-          phone: formData.phone,
-        },
-        agreement: {
-          services: formData.services,
-          contractModel: formData.contractModel as 'monthly' | 'single',
-          agreedValue: parseCurrency(formData.agreedValue),
-          paymentMethods: formData.paymentMethods,
-          recurringReminder: formData.recurringReminder,
-        },
-        assistant: {
-          mainFunctions: formData.mainFunctions,
-          top5Questions: formData.top5Questions,
-          communicationTone: formData.communicationTone,
-          existingSolutions: formData.existingSolutions,
-        },
-        digital: {
-          contactPhones: formData.contactPhones,
-          paymentMethodsAccepted: formData.paymentMethodsAccepted,
-          address: formData.address,
-          instagram: formData.instagram,
-          website: formData.website,
-          restrictedTopics: formData.restrictedTopics,
-        },
-        materials: {
-          additionalInfo: formData.additionalInfo,
-          uploadedFiles: formData.uploadedFiles.map(f => ({ name: f.name, size: f.size, type: f.type })),
-        },
-        metadata: {
-          timestamp: new Date().toISOString(),
-          source: 'onboarding_quiz',
-        },
-      };
-
-      await sendOnboardingData(payload);
+      // Salvar no banco e enviar para n8n webhook
+      await finalizarCadastro(formData);
+      
       localStorage.removeItem(STORAGE_KEY);
       setStep('success');
     } catch (error) {

@@ -14,7 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cadastros_clientes: {
+        Row: {
+          arquivos_upload: Json | null
+          cpf_cnpj: string | null
+          created_at: string
+          email_principal: string
+          endereco_empresa: string | null
+          fone_whatsapp: string
+          forma_pagamento: string[] | null
+          formas_pagamento_aceitas: string | null
+          funcao_principal: string[] | null
+          id: string
+          informacoes_produtos_servicos: string | null
+          instagram_empresa: string | null
+          lembrete_pagamento: boolean | null
+          modelo_contratacao: string | null
+          nome_empresa: string
+          nome_responsavel: string
+          origem: string | null
+          perguntas_comuns: string | null
+          segmento_produto_servico: string | null
+          servicos_contratados: string[] | null
+          site_empresa: string | null
+          solucoes_existentes: string[] | null
+          status: string | null
+          telefone_contato: string | null
+          tom_comunicacao: string | null
+          topicos_nao_abordar: string | null
+          valor_acordado: number | null
+          webhook_data: string | null
+          webhook_enviado: boolean | null
+        }
+        Insert: {
+          arquivos_upload?: Json | null
+          cpf_cnpj?: string | null
+          created_at?: string
+          email_principal: string
+          endereco_empresa?: string | null
+          fone_whatsapp: string
+          forma_pagamento?: string[] | null
+          formas_pagamento_aceitas?: string | null
+          funcao_principal?: string[] | null
+          id?: string
+          informacoes_produtos_servicos?: string | null
+          instagram_empresa?: string | null
+          lembrete_pagamento?: boolean | null
+          modelo_contratacao?: string | null
+          nome_empresa: string
+          nome_responsavel: string
+          origem?: string | null
+          perguntas_comuns?: string | null
+          segmento_produto_servico?: string | null
+          servicos_contratados?: string[] | null
+          site_empresa?: string | null
+          solucoes_existentes?: string[] | null
+          status?: string | null
+          telefone_contato?: string | null
+          tom_comunicacao?: string | null
+          topicos_nao_abordar?: string | null
+          valor_acordado?: number | null
+          webhook_data?: string | null
+          webhook_enviado?: boolean | null
+        }
+        Update: {
+          arquivos_upload?: Json | null
+          cpf_cnpj?: string | null
+          created_at?: string
+          email_principal?: string
+          endereco_empresa?: string | null
+          fone_whatsapp?: string
+          forma_pagamento?: string[] | null
+          formas_pagamento_aceitas?: string | null
+          funcao_principal?: string[] | null
+          id?: string
+          informacoes_produtos_servicos?: string | null
+          instagram_empresa?: string | null
+          lembrete_pagamento?: boolean | null
+          modelo_contratacao?: string | null
+          nome_empresa?: string
+          nome_responsavel?: string
+          origem?: string | null
+          perguntas_comuns?: string | null
+          segmento_produto_servico?: string | null
+          servicos_contratados?: string[] | null
+          site_empresa?: string | null
+          solucoes_existentes?: string[] | null
+          status?: string | null
+          telefone_contato?: string | null
+          tom_comunicacao?: string | null
+          topicos_nao_abordar?: string | null
+          valor_acordado?: number | null
+          webhook_data?: string | null
+          webhook_enviado?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
