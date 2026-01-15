@@ -24,12 +24,12 @@ export function Quiz() {
   useEffect(() => {
     // Check if this is a new browser session (no session ID in sessionStorage)
     const sessionId = sessionStorage.getItem('form_session_id');
-    
+
     if (!sessionId) {
       // New session - clear any old localStorage data and start fresh
       localStorage.removeItem(STORAGE_KEY);
       console.log('🆕 Nova sessão de formulário iniciada - dados limpos');
-      
+
       // Create new session ID
       sessionStorage.setItem('form_session_id', Date.now().toString());
     } else {
@@ -84,18 +84,18 @@ export function Quiz() {
     try {
       // Salvar no banco e enviar para n8n webhook
       await finalizarCadastro(formData);
-      
+
       // Clear both storages on success
       localStorage.removeItem(STORAGE_KEY);
       sessionStorage.removeItem(STORAGE_KEY);
       sessionStorage.removeItem('form_session_id');
       setStep('success');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Submit error:', error);
       toast({
         variant: 'destructive',
         title: 'Erro ao enviar',
-        description: 'Não foi possível enviar seus dados. Tente novamente.',
+        description: error.message || 'Não foi possível enviar seus dados. Tente novamente.',
       });
     } finally {
       setIsSubmitting(false);
@@ -115,40 +115,40 @@ export function Quiz() {
           <WelcomeStep onNext={() => goToStep('company')} />
         )}
         {step === 'company' && (
-          <CompanyStep 
-            formData={formData} 
-            updateFormData={updateFormData} 
-            onNext={() => goToStep('personalization')} 
+          <CompanyStep
+            formData={formData}
+            updateFormData={updateFormData}
+            onNext={() => goToStep('personalization')}
           />
         )}
         {step === 'personalization' && (
-          <PersonalizationStep 
-            formData={formData} 
-            updateFormData={updateFormData} 
-            onNext={() => goToStep('digital')} 
+          <PersonalizationStep
+            formData={formData}
+            updateFormData={updateFormData}
+            onNext={() => goToStep('digital')}
             onBack={() => goToStep('company')}
           />
         )}
         {step === 'digital' && (
-          <DigitalStep 
-            formData={formData} 
-            updateFormData={updateFormData} 
-            onNext={() => goToStep('materials')} 
+          <DigitalStep
+            formData={formData}
+            updateFormData={updateFormData}
+            onNext={() => goToStep('materials')}
             onBack={() => goToStep('personalization')}
           />
         )}
         {step === 'materials' && (
-          <MaterialsStep 
-            formData={formData} 
-            updateFormData={updateFormData} 
-            onNext={() => goToStep('review')} 
+          <MaterialsStep
+            formData={formData}
+            updateFormData={updateFormData}
+            onNext={() => goToStep('review')}
             onBack={() => goToStep('digital')}
           />
         )}
         {step === 'review' && (
-          <ReviewStep 
-            formData={formData} 
-            onBack={() => goToStep('materials')} 
+          <ReviewStep
+            formData={formData}
+            onBack={() => goToStep('materials')}
             onEditStep={handleEditStep}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
