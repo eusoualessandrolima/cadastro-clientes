@@ -9,16 +9,20 @@ const WEBHOOK_URL_FALLBACK = 'https://webhook.companychatautomacoeseia.com/webho
 async function getWebhookUrlProd(): Promise<string | null> {
   try {
     const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) {
-      console.warn('⚠️ Usuário não autenticado, usando URL de fallback');
-      return WEBHOOK_URL_FALLBACK;
+
+    // Tentamos buscar a configuração
+    let query = supabase.from('configuracoes_sistema').select('configuracoes');
+
+    // Se o usuário estiver logado (admin testando), filtramos por ele
+    if (userData.user) {
+      query = query.eq('user_id', userData.user.id);
+    } else {
+      // Se for um cliente externo (público), pegamos a primeira configuração disponível
+      // que foi definida pelo admin no painel
+      query = query.limit(1);
     }
 
-    const { data, error } = await supabase
-      .from('configuracoes_sistema')
-      .select('configuracoes')
-      .eq('user_id', userData.user.id)
-      .maybeSingle();
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       console.error('Erro ao buscar configurações:', error);
@@ -26,7 +30,7 @@ async function getWebhookUrlProd(): Promise<string | null> {
     }
 
     const config = data?.configuracoes as { webhook_url_prod?: string } | null;
-    
+
     if (config?.webhook_url_prod) {
       console.log('📍 Usando URL de produção configurada:', config.webhook_url_prod);
       return config.webhook_url_prod;
@@ -133,7 +137,7 @@ export async function enviarParaWebhookN8n(formData: FormData, cadastroId?: stri
   try {
     // Buscar URL de produção das configurações
     const webhookUrl = await getWebhookUrlProd();
-    
+
     if (!webhookUrl) {
       console.warn('⚠️ URL de webhook de produção não configurada');
       return false;
@@ -188,7 +192,7 @@ export async function enviarParaWebhookN8n(formData: FormData, cadastroId?: stri
     };
 
     console.log('📤 Enviando para webhook n8n (PRODUÇÃO):', webhookUrl);
-    
+
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
@@ -240,7 +244,7 @@ export async function finalizarCadastro(formData: FormData): Promise<{ success: 
   // 1. Salvar no banco
   console.log('💾 Etapa 1: Salvando no banco de dados...');
   let cadastroId: string;
-  
+
   try {
     const result = await salvarCadastroNoSupabase(formData);
     cadastroId = result.id;
@@ -251,7 +255,7 @@ export async function finalizarCadastro(formData: FormData): Promise<{ success: 
     console.error('  Mensagem:', (dbError as Error).message);
     throw dbError;
   }
-  
+
   // 2. Enviar para n8n (não quebra o fluxo se falhar)
   console.log('📡 Etapa 2: Enviando para webhook n8n...');
   try {
@@ -261,7 +265,7 @@ export async function finalizarCadastro(formData: FormData): Promise<{ success: 
     console.warn('⚠️ Etapa 2 falhou (webhook), mas cadastro foi salvo:', webhookError);
     // Não re-lançar o erro - o cadastro já foi salvo
   }
-  
+
   console.log('🎉 CADASTRO FINALIZADO COM SUCESSO!');
   return { success: true };
 }
