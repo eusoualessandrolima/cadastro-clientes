@@ -160,15 +160,21 @@ export default function ConfiguracoesCadastros() {
 
     try {
       const dadosTeste = {
-        evento: 'teste_conexao',
+        evento: 'teste_conexao_completo',
         timestamp: new Date().toISOString(),
-        dados: {
-          mensagem: 'Teste de conexão do webhook',
-          sistema: 'Cadastros - CompanyChat IA'
-        }
+        company: {
+          responsibleName: 'Alessandro Lima',
+          companyName: 'CompanyChat IA',
+          segment: 'Tecnologia',
+          cpfCnpj: '063.044.761-67',
+          email: 'alessandro.tecnologia@gmail.com',
+          phone: '(62) 99642-4748'
+        },
+        status: 'teste',
+        sistema: 'Gestão Clientes7'
       };
 
-      console.log('📤 Enviando dados:', dadosTeste);
+      console.log('📤 Enviando dados de teste completos:', dadosTeste);
 
       const response = await fetch(config.webhook_url_test, {
         method: 'POST',
@@ -259,8 +265,8 @@ export default function ConfiguracoesCadastros() {
             <Link
               to="/dashboard"
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === '/dashboard'
-                  ? 'bg-[#00FF94]/10 text-[#00FF94] border border-[#00FF94]/20'
-                  : 'text-gray-400 hover:bg-white/5'
+                ? 'bg-[#00FF94]/10 text-[#00FF94] border border-[#00FF94]/20'
+                : 'text-gray-400 hover:bg-white/5'
                 }`}
             >
               <LayoutDashboard className="w-5 h-5" />
@@ -270,8 +276,8 @@ export default function ConfiguracoesCadastros() {
             <Link
               to="/configuracoes-cadastros"
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === '/configuracoes-cadastros'
-                  ? 'bg-[#00FF94]/10 text-[#00FF94] border border-[#00FF94]/20'
-                  : 'text-gray-400 hover:bg-white/5'
+                ? 'bg-[#00FF94]/10 text-[#00FF94] border border-[#00FF94]/20'
+                : 'text-gray-400 hover:bg-white/5'
                 }`}
             >
               <Settings className="w-5 h-5" />
